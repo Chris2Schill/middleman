@@ -1,0 +1,32 @@
+{
+    "rules": [
+        {
+            "conditions": [
+                {
+                    "field": "pdu_header.pdu_type",
+                    "operator": "==",
+                    "value": 1
+                },
+                {
+                    "field": "pdu_header.exercise_id",
+                    "operator": "==",
+                    "value": 2
+                }
+            ],
+            "mutations": [
+                {
+                    "field": "entity_id.site",
+                    "new_value": 1
+                },
+                {
+                    "field": "entity_id.app",
+                    "new_value": 101
+                },
+                {
+                    "field": "entity_id.entity",
+                    "new_value": 1
+                }
+            ]
+        }
+    ]   
+}

@@ -1,0 +1,44 @@
+[
+{
+  "directory": "/home/cschilling/repos/middleman/build/x64-linux",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -I/home/cschilling/repos/middleman/include -I/home/cschilling/repos/middleman/src/../include -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include -g -std=c++17 -fPIC -o src/CMakeFiles/mmcore.dir/network/udp_transport.cpp.o -c /home/cschilling/repos/middleman/src/network/udp_transport.cpp",
+  "file": "/home/cschilling/repos/middleman/src/network/udp_transport.cpp",
+  "output": "src/CMakeFiles/mmcore.dir/network/udp_transport.cpp.o"
+},
+{
+  "directory": "/home/cschilling/repos/middleman/build/x64-linux",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -I/home/cschilling/repos/middleman/include -I/home/cschilling/repos/middleman/src/../include -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include -g -std=c++17 -fPIC -o src/CMakeFiles/mmcore.dir/network/middleman_proxy.cpp.o -c /home/cschilling/repos/middleman/src/network/middleman_proxy.cpp",
+  "file": "/home/cschilling/repos/middleman/src/network/middleman_proxy.cpp",
+  "output": "src/CMakeFiles/mmcore.dir/network/middleman_proxy.cpp.o"
+},
+{
+  "directory": "/home/cschilling/repos/middleman/build/x64-linux",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -I/home/cschilling/repos/middleman/include -I/home/cschilling/repos/middleman/src/../include -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include -g -std=c++17 -fPIC -o src/CMakeFiles/mmcore.dir/mutators/json_rule_based_mutator.cpp.o -c /home/cschilling/repos/middleman/src/mutators/json_rule_based_mutator.cpp",
+  "file": "/home/cschilling/repos/middleman/src/mutators/json_rule_based_mutator.cpp",
+  "output": "src/CMakeFiles/mmcore.dir/mutators/json_rule_based_mutator.cpp.o"
+},
+{
+  "directory": "/home/cschilling/repos/middleman/build/x64-linux",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -I/home/cschilling/repos/middleman/include -I/home/cschilling/repos/middleman/src/../include -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include -g -std=c++17 -fPIC -o src/CMakeFiles/mmcore.dir/mutators/test_mutator.cpp.o -c /home/cschilling/repos/middleman/src/mutators/test_mutator.cpp",
+  "file": "/home/cschilling/repos/middleman/src/mutators/test_mutator.cpp",
+  "output": "src/CMakeFiles/mmcore.dir/mutators/test_mutator.cpp.o"
+},
+{
+  "directory": "/home/cschilling/repos/middleman/build/x64-linux",
+  "command": "/usr/bin/c++ -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -I/home/cschilling/repos/middleman/include -I/home/cschilling/repos/middleman/src/../include -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include -g -std=c++17 -fPIE -o src/cli/CMakeFiles/mmcli.dir/main.cpp.o -c /home/cschilling/repos/middleman/src/cli/main.cpp",
+  "file": "/home/cschilling/repos/middleman/src/cli/main.cpp",
+  "output": "src/cli/CMakeFiles/mmcli.dir/main.cpp.o"
+},
+{
+  "directory": "/home/cschilling/repos/middleman/build/x64-linux",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -I/home/cschilling/repos/middleman/build/x64-linux/src/gui/mmgui_autogen/include -I/home/cschilling/repos/middleman/include -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include/Qt6/QtWidgets -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include/Qt6 -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include/Qt6/QtCore -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/share/Qt6/mkspecs/linux-g++ -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include/Qt6/QtGui -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include -g -std=c++17 -fPIE -fPIC -o src/gui/CMakeFiles/mmgui.dir/mmgui_autogen/mocs_compilation.cpp.o -c /home/cschilling/repos/middleman/build/x64-linux/src/gui/mmgui_autogen/mocs_compilation.cpp",
+  "file": "/home/cschilling/repos/middleman/build/x64-linux/src/gui/mmgui_autogen/mocs_compilation.cpp",
+  "output": "src/gui/CMakeFiles/mmgui.dir/mmgui_autogen/mocs_compilation.cpp.o"
+},
+{
+  "directory": "/home/cschilling/repos/middleman/build/x64-linux",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -I/home/cschilling/repos/middleman/build/x64-linux/src/gui/mmgui_autogen/include -I/home/cschilling/repos/middleman/include -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include/Qt6/QtWidgets -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include/Qt6 -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include/Qt6/QtCore -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/share/Qt6/mkspecs/linux-g++ -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include/Qt6/QtGui -isystem /home/cschilling/repos/middleman/build/x64-linux/vcpkg_installed/x64-linux/include -g -std=c++17 -fPIE -fPIC -o src/gui/CMakeFiles/mmgui.dir/main.cpp.o -c /home/cschilling/repos/middleman/src/gui/main.cpp",
+  "file": "/home/cschilling/repos/middleman/src/gui/main.cpp",
+  "output": "src/gui/CMakeFiles/mmgui.dir/main.cpp.o"
+}
+]

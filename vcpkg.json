@@ -1,0 +1,32 @@
+{
+  "dependencies": [
+    "cereal",
+    "qtbase",
+    "nlohmann-json",
+    "spdlog",
+    "boost-asio",
+    "boost-filesystem",
+    "boost-interprocess",
+    "boost-config",
+    "boost-system",
+    "boost-range",
+    "boost-dll",
+    "boost-signals2"
+  ],
+  "vcpkg-configuration": {
+    "default-registry": {
+      "kind": "git",
+      "baseline": "80d54ff62d528339c626a6fbc3489a7f25956ade",
+      "repository": "https://github.com/microsoft/vcpkg"
+    },
+    "registries": [
+      {
+        "kind": "artifact",
+        "location": "https://github.com/microsoft/vcpkg-ce-catalog/archive/refs/heads/main.zip",
+        "name": "microsoft"
+      }
+    ],
+    "overlay-ports": [ "external/vcpkg/overlay_ports" ],
+    "overlay-triplets": [ "external/vcpkg/overlay_triplets" ]
+  }
+}

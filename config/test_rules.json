@@ -1,0 +1,34 @@
+{
+    "rules":[
+        {
+            "conditions": [
+                {
+                    "field": "pdu_header.pdu_type",
+                    "operator": "==",
+                    "value": 1
+                },
+                { "operator": "AND" },
+                {
+                    "field": "pdu_header.padding",
+                    "operator": "==",
+                    "value": 0
+                },
+                { "operator": "AND" },
+                {
+                    "conditions": [
+                        {
+                            "field": "pdu_header.dis_version",
+                            "operator": "==",
+                            "value": 7
+                        }
+                    ]
+                },
+
+            ],
+            "mutation": {
+                "field": "pdu_header.exercise_id",
+                "value": "2"
+            }
+        }
+    ]   
+}

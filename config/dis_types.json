@@ -1,0 +1,152 @@
+{
+    "packets": [
+        {
+            "name": "entity_state",
+            "opcode_field": "pdu_header.pdu_type",
+            "opcode": 1,
+            "data": [ 
+                {
+                    "struct": "pdu_header",
+                    "data": [
+                        { "value": "protocol_version", "type": "uint8" },
+                        { "value": "exercise_id",      "type": "uint8" },
+                        { "value": "pdu_type",         "type": "uint8" },
+                        { "value": "protocol_family",  "type": "uint8" },
+                        { "value": "timestamp",        "type": "int32" },
+                        { "value": "pdu_length",       "type": "uint16" },
+                        { "value": "padding",          "type": "uint16" }
+                    ]
+                },
+                {
+                    "struct": "entity_id",
+                    "data": [
+                        { "value": "site",          "type": "uint16" },
+                        { "value": "app",           "type": "uint16" },
+                        { "value": "entity",        "type": "uint16" }
+                    ]
+                },
+                { "value": "force",            "type": "uint8" },
+                { "value": "num_articulated_parts", "type": "uint8" },
+                {
+                    "struct": "entity_type",
+                    "data": [
+                        { "value": "kind",        "type": "uint8" },
+                        { "value": "domain",      "type": "uint8" },
+                        { "value": "country",     "type": "uint16" },
+                        { "value": "category",    "type": "uint8" },
+                        { "value": "subcategory", "type": "uint8" },
+                        { "value": "specific",    "type": "uint8" },
+                        { "value": "extra",       "type": "uint8" }
+                    ]
+                },
+                {
+                    "struct": "alternative_entity_type",
+                    "data": [
+                        { "value": "kind",        "type": "uint8" },
+                        { "value": "domain",      "type": "uint8" },
+                        { "value": "country",     "type": "uint16" },
+                        { "value": "category",    "type": "uint8" },
+                        { "value": "subcategory", "type": "uint8" },
+                        { "value": "specific",    "type": "uint8" },
+                        { "value": "extra",       "type": "uint8" }
+                    ]
+                },
+                {
+                    "struct": "entity_linear_velocity",
+                    "data": [
+                        { "value": "x",       "type": "float" },
+                        { "value": "y",       "type": "float" },
+                        { "value": "z",       "type": "float" }
+                    ]
+                },
+                {
+                    "struct": "entity_location",
+                    "data": [
+                        { "value": "x",       "type": "double" },
+                        { "value": "y",       "type": "double" },
+                        { "value": "z",       "type": "double" }
+                    ]
+                },
+                {
+                    "struct": "entity_orientation",
+                    "data": [
+                        { "value": "psi",       "type": "float" },
+                        { "value": "theta",       "type": "float" },
+                        { "value": "phi",       "type": "float" }
+                    ]
+                },
+                {
+                    "struct": "entity_appearance",
+                    "data": [
+                        { "value": "general",       "type": "float" },
+                        {
+                            "struct": "specific",
+                            "data": [
+                                { "value": "land_platforms",       "type": "uint16" },
+                                { "value": "air_platforms",        "type": "uint16" },
+                                { "value": "surface_platforms",    "type": "uint16" },
+                                { "value": "subsurface_platforms", "type": "uint16" },
+                                { "value": "space_platforms",      "type": "uint16" },
+                                { "value": "guided_munitions",     "type": "uint16" },
+                                { "value": "life_forms",           "type": "uint16" },
+                                { "value": "environmentals",       "type": "uint16" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "struct": "dead_reckoning",
+                    "data": [
+                        { "value": "algorithm",       "type": "uint8" },
+                        {
+                            "struct": "other",
+                            "data": [
+                                { "value": "padding", "size": 120 }
+                            ]
+                        },
+                        {
+                            "struct": "entity_linear_acceleration",
+                            "data": [
+                                { "value": "x",       "type": "float" },
+                                { "value": "y",       "type": "float" },
+                                { "value": "z",       "type": "float" }
+                            ]
+                        },
+                        {
+                            "struct": "entity_angular_velocity",
+                            "data": [
+                                { "value": "x",       "type": "float" },
+                                { "value": "y",       "type": "float" },
+                                { "value": "z",       "type": "float" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "struct": "entity_marking",
+                    "data": [
+                        { "value": "char_set",  "type": "int8" },
+                        { "value": "char_set",  "size": 88 }
+                    ]
+                },
+                { "value": "entity_capabilities",  "type": "uint32" },
+                {
+                    "struct": "articulation_parameter",
+                    "data": [
+                        { "value": "parameter_type_designator",  "type": "uint8" },
+                        { "value": "parameter_change_indicator",  "type": "uint8" },
+                        { "value": "articulation_attachment_id",  "type": "uint16" },
+                        {
+                            "struct": "paramter_type_varient",
+                            "data": [
+                                { "value": "attached_parts",  "type": "uint32" },
+                                { "value": "articulated_parts",  "type": "uint32" }
+                            ]
+                        }
+                    ]
+                },
+                { "value": "articulation_parameter_value",  "type": "uint64" }
+            ]
+        }
+    ]
+}
