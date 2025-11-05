@@ -10,7 +10,7 @@ case "$OSTYPE" in
         set_and_print_env VCPKG_TARGET_TRIPLET x64-mingw-dynamic
         set_and_print_env VCPKG_DEFAULT_TRIPLET $VCPKG_TARGET_TRIPLET
         set_and_print_env VCPKG_DEFAULT_HOST_TRIPLET $VCPKG_TARGET_TRIPLET
-        set_and_print_env CPACK_GENERATOR "NSYS;ZIP"
+        set_and_print_env CPACK_GENERATOR "NSIS;ZIP"
         ;;
     linux*)
         set_and_print_env VCPKG_TARGET_TRIPLET x64-linux
