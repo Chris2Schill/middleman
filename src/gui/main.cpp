@@ -89,7 +89,7 @@ public:
 
     struct ui_container {
         QTabWidget* tabWidget = new QTabWidget;
-        SchemaEditor* schemaEditor = new SchemaEditor;
+        SchemaEditor* schemaEditor = new SchemaEditor("dis_pdus_scaffold.json");
         ConnectionWidget* connectionWidget = new ConnectionWidget;
 
         QWidget* configurationSection = new QWidget;
