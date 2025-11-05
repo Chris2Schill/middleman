@@ -20,9 +20,11 @@
 #include <mm/mutators/test_mutator.hpp>
 #include <mm/mutators/json_rule_based_mutator.hpp>
 #include <mm/config_reader.hpp>
+
+#include "connection_widget.hpp"
 #include "rules_editor_widget.hpp"
 #include "schema_editor.hpp"
-#include "connection_widget.hpp"
+#include "udp_viewer_widget.hpp"
 
 
 class AsioThread : public QThread {
@@ -78,6 +80,18 @@ public:
             };
 
             proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);
+            proxy_server->on_recv = [this](auto socket, auto readBuf, auto sender, auto ec, auto bytes){
+                QByteArray readBufClone((const char*)readBuf->data(), bytes);
+                QHostAddress srcHost(QString::fromStdString(sender->address().to_string()));
+                QHostAddress dstHost("0.0.0.0");
+                QMetaObject::invokeMethod(this, [=]{
+                        int bytesClone = bytes;
+
+                        ui.packetViewer->addPacket(
+                                readBufClone, srcHost, 3000, dstHost, 3000
+                            );
+                    },Qt::QueuedConnection) ;
+            };
             ui.rulesEditor->setEnabled(false);
         };
         ui.connectionEditor->onStop = [this]() {
@@ -87,8 +101,9 @@ public:
 
         layout->addWidget(ui.tabWidget);
         ui.tabWidget->setContentsMargins(0,0,0,0);
-        ui.tabWidget->addTab(ui.schemaEditor, "Packets");
+        ui.tabWidget->addTab(ui.packetViewer, "Packets");
         ui.tabWidget->addTab(ui.rulesEditor, "Rules");
+        ui.tabWidget->addTab(ui.schemaEditor, "Types");
 
         asio_thread = std::thread([this](){
                 boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard(boost::asio::make_work_guard(asio_ctx));
@@ -101,6 +116,7 @@ public:
         SchemaEditor* schemaEditor = new SchemaEditor("dis_pdus_scaffold.json");
         ConnectionWidget* connectionEditor = new ConnectionWidget;
         RulesEditorWidget* rulesEditor = new RulesEditorWidget("test_rules2.json");
+        UdpViewerWidget* packetViewer = new UdpViewerWidget;
 
         QWidget* configurationSection = new QWidget;
         QGridLayout* configurationSectionLayout = new QGridLayout;

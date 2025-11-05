@@ -12,9 +12,9 @@ cmake_minimum_required(VERSION 3.0..3.5)
 
 project(mmgui VERSION 1.0.0 LANGUAGES CXX)
 
-find_package(Qt6 COMPONENTS Widgets PrintSupport)
+find_package(Qt6 COMPONENTS Widgets Network PrintSupport)
 if (NOT Qt6_FOUND)
-    find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets PrintSupport)
+    find_package(Qt5 5.15 REQUIRED COMPONENTS Widgets Network PrintSupport)
 endif()
 
 find_package(spdlog REQUIRED)
@@ -28,11 +28,12 @@ set(SOURCES
     main.cpp
     connection_widget.cpp
     rules_editor_widget.cpp
+    udp_viewer_widget.cpp
 )
 
 add_executable(mmgui ${SOURCES})
 # add_executable(mmgui gpt.cpp)
-target_link_libraries(mmgui PRIVATE Qt6::Widgets spdlog::spdlog mmcore)
+target_link_libraries(mmgui PRIVATE Qt6::Widgets Qt6::Network spdlog::spdlog mmcore)
 target_include_directories(mmgui PRIVATE .)
 set_target_properties(mmgui PROPERTIES
     # WIN32_EXECUTABLE ON

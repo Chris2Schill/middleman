@@ -2,6 +2,7 @@
 
 #include "udp_transport.hpp"
 #include <iomanip>
+#include <functional>
 
 #include <mm/mutators/packet_mutator.hpp>
 
@@ -71,6 +72,13 @@ public:
         }
     }
 
+    // For UI to be notified of packets
+    std::function<void(mm::network::UDPTransportPtr,
+                       mm::network::BufferPtr,
+                       mm::network::EndpointPtr,
+                       const boost::system::error_code&,
+                       std::size_t)> on_recv;
+
     void recv_callback(mm::network::UDPTransportPtr socket,
                        mm::network::BufferPtr readBuf,
                        mm::network::EndpointPtr sender,
@@ -93,6 +101,8 @@ public:
         if (rc != UDPTransport::SUCCESS) {
             spdlog::warn("Failed to forward packet to remote host: errcode {}", (int)rc);
         }
+
+        on_recv(socket,readBuf,sender,ec,bytes);
     }
 
 };
