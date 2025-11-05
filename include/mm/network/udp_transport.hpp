@@ -1,40 +1,7 @@
-// =========================================================================
-// RESTRICTED RIGHTS
-// Contract No.: AVTLS-FSTSSBUILD-23-01 FSTSS
-// Contractor Name: Applied Visual Technology, Inc. (d/b/a AVT Simulation)
-// Contractor Address: 4715 Data Court, Suite 100, Orlando, Florida 32817
-// Expiration Date: None
-//
-// For any delivery to the U.S. Government:
-// The Government's rights to use, modify, reproduce, release, perform,
-// display, or disclose this software are restricted by paragraph (c)(3) of
-// the DFARS 252.227-7014, Rights in Other Than Commercial Computer Software
-// and Other Than Commercial Computer Software Documentation, clause
-// contained in the above identified contract. Any reproduction of computer
-// software or portions thereof marked with this legend must also reproduce
-// the markings. Any person, other than the Government, who has been provided
-// access to such software must promptly notify the above named Contractor
-//
-// For any delivery to a non-U.S. Government entity:
-// This work is copyright, and no rights are conferred unless a superseding
-// license agreement accompanies the delivery.
-//
-// SECURITY CLASSIFICATION: UNCLASSIFIED
-//
-// WARNING - This document contains technical data whose export is restricted
-// by the Arms Export Control Act (Title 22, U.S.C., Sec 2751, et seq.) or
-// the Export Control Reform Act of 2018(Title 50, U.S.C., Chapter 58,
-// Sec. 4801-4852). Violations of these export laws are subject to severe
-// criminal penalties. Disseminate in accordance with provisions of DoD
-// Directive 5230.25.
-//
-// Copyright © 2025, Applied Visual Technology, Inc. (d/b/a AVT Simulation)
-// Unpublished Work - All Rights Reserved
-//
-// =========================================================================
 #pragma once
 
 #include <boost/asio/error.hpp>
+#include <boost/asio/ip/multicast.hpp>
 #include <cassert>
 #include <sstream>
 #include <boost/asio.hpp>
@@ -105,6 +72,12 @@ public:
     void setBroadcast(bool bcast);
 
     void cancel() { socket->cancel(); }
+
+    void setTTL(int hops);
+
+    void setMulticastOutboundInterface(const std::string& ip);
+
+    void joinGroup(std::string groupIp, bool loopback);
 
 private:
     void startRead();
@@ -265,4 +238,25 @@ inline void UDPTransport::setBroadcast(bool bcast)
     socket->set_option(boost::asio::socket_base::broadcast(bcast));
 }
 
+inline void UDPTransport::setTTL(int hops) {
+    socket->set_option(boost::asio::ip::multicast::hops(hops));
+}
+
+inline void UDPTransport::setMulticastOutboundInterface(const std::string& ip) {
+    boost::asio::ip::address outbound = boost::asio::ip::address::from_string(ip);
+    socket->set_option(boost::asio::ip::multicast::outbound_interface(outbound));
+}
+
+inline void UDPTransport::joinGroup(std::string groupIp, bool loopback) {
+    boost::asio::ip::address multicastAddress = boost::asio::ip::address::from_string(groupIp);
+    boost::system::error_code ec;
+    socket->set_option(boost::asio::ip::multicast::join_group(multicastAddress.to_v4()), ec);
+    if (ec) {
+        spdlog::error("Failed to join multicast group {}", groupId);
+    }
+    socket->set_option(boost::asio::ip::multicast::enable_loopback(loopback), ec);
+    if (ec) {
+        spdlog::error("Failed to set multicast loopback option {}", loopback);
+    }
+}
 }
