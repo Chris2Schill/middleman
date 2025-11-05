@@ -15,3 +15,6 @@ clean:
 
 run:
 	cd build/x64-linux/src/cli && ./mmcli
+
+rungui:
+	cd build/x64-linux/src/gui && ./mmgui
