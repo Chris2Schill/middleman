@@ -210,25 +210,6 @@ static bool evaluate_condition(const Condition& condition, mm::network::BufferPt
     return false;
 }
 
-bool json_rule_based_mutator::should_mutate(mm::network::BufferPtr readBuf,
-                   mm::network::EndpointPtr sender,
-                   std::size_t bytes) {
-
-    for (const auto& rule : rules) {
-        bool passed = true;
-        for (const auto& condition : rule.conditions) {
-            passed &= evaluate_condition(condition, readBuf, to_network_byte_order);
-        }
-
-        if (passed) {
-            next_mutation = &rule.mutations;
-            return true;
-        }
-    }
-
-    return false;
-}
-
 template<typename T>
 static void set_field(void* field, const T value, int size, bool byteswap = false) {
     std::memcpy(field, &value, size);
@@ -241,57 +222,66 @@ static void set_field(void* field, const T value, int size, bool byteswap = fals
 bool json_rule_based_mutator::mutate_packet(mm::network::BufferPtr readBuf,
                    mm::network::EndpointPtr sender,
                    std::size_t bytes) {
-    if (!next_mutation) { return false; }
 
-    for (const auto& mutation : *next_mutation) {
-        void* data_ptr = static_cast<void*>(&readBuf->data()[mutation.data_offset]);
+    bool mutated = false;
+    for (const auto& rule : rules) {
+        bool passed = true;
+        for (const auto& condition : rule.conditions) {
+            passed &= evaluate_condition(condition, readBuf, to_network_byte_order);
+        }
 
-        switch(mutation.type) {
-            case FLOAT_TYPE:
-                set_field<float>(data_ptr, mutation.new_value_d, mutation.data_size, to_network_byte_order);
-                break;
-            case DOUBLE_TYPE:
-                set_field<double>(data_ptr, mutation.new_value_d,  mutation.data_size, to_network_byte_order);
-                break;
-            case CHAR_TYPE:
-                set_field<int8_t>(data_ptr, mutation.new_value_i,  mutation.data_size, to_network_byte_order);
-                break;
-            case SHORT_TYPE:
-                set_field<int16_t>(data_ptr, mutation.new_value_i,  mutation.data_size, to_network_byte_order);
-                break;
-            case INT_TYPE:
-                set_field<int32_t>(data_ptr, mutation.new_value_i,  mutation.data_size, to_network_byte_order);
-                break;
-            case LONG_TYPE:
-                set_field<int64_t>(data_ptr, mutation.new_value_i,  mutation.data_size, to_network_byte_order);
-                break;
-            case UCHAR_TYPE:
-                set_field<uint8_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
-                break;
-            case USHORT_TYPE:
-                set_field<uint16_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
-                break;
-            case UINT_TYPE:
-                set_field<uint32_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
-                break;
-            case ULONG_TYPE:
-                set_field<uint64_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
-                break;
-            case ARRAY_TYPE:
-                // TODO:
-                // set_field<uint64_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
-                break;
-            default:
-                spdlog::error("Could not execute mutation: invalid type %d ", +mutation.type) ;
-                break;
+        if (passed) {
+            for (const auto& mutation : rule.mutations) {
+                void* data_ptr = static_cast<void*>(&readBuf->data()[mutation.data_offset]);
+
+                switch(mutation.type) {
+                    case FLOAT_TYPE:
+                        set_field<float>(data_ptr, mutation.new_value_d, mutation.data_size, to_network_byte_order);
+                        break;
+                    case DOUBLE_TYPE:
+                        set_field<double>(data_ptr, mutation.new_value_d,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case CHAR_TYPE:
+                        set_field<int8_t>(data_ptr, mutation.new_value_i,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case SHORT_TYPE:
+                        set_field<int16_t>(data_ptr, mutation.new_value_i,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case INT_TYPE:
+                        set_field<int32_t>(data_ptr, mutation.new_value_i,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case LONG_TYPE:
+                        set_field<int64_t>(data_ptr, mutation.new_value_i,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case UCHAR_TYPE:
+                        set_field<uint8_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case USHORT_TYPE:
+                        set_field<uint16_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case UINT_TYPE:
+                        set_field<uint32_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case ULONG_TYPE:
+                        set_field<uint64_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
+                        break;
+                    case ARRAY_TYPE:
+                        // TODO:
+                        // set_field<uint64_t>(data_ptr, mutation.new_value_u,  mutation.data_size, to_network_byte_order);
+                        break;
+                    default:
+                        spdlog::error("Could not execute mutation: invalid type %d ", +mutation.type) ;
+                        break;
+                }
+                mutated = true;
+            }
         }
     }
-
-    next_mutation = nullptr;
-    return true;
+    
+    return mutated;
 }
 
-}
+} // end namespace mm::mutators
 
 static packet_types packet_description_from_json(json j) {
     packet_types pds;

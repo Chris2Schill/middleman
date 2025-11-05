@@ -76,11 +76,9 @@ public:
             spdlog::info(buffer_to_hex((const char*)readBuf->data(), bytes));
         }
 
-        if (cfg.mutator->should_mutate(readBuf,sender,bytes)) {
-            cfg.mutator->mutate_packet(readBuf,sender,bytes);
-            if (cfg.log_to_stdout) {
-                spdlog::info(buffer_to_hex((const char*)readBuf->data(), bytes) + " (mutated)");
-            }
+        bool mutated = cfg.mutator->mutate_packet(readBuf,sender,bytes);
+        if (mutated && cfg.log_to_stdout) {
+            spdlog::info(buffer_to_hex((const char*)readBuf->data(), bytes) + " (mutated)");
         }
 
 

@@ -6,11 +6,6 @@
 namespace mm::mutators {
 
 struct tester : public mm::mutators::packet_mutator{
-    virtual bool should_mutate(mm::network::BufferPtr readBuf,
-                       mm::network::EndpointPtr sender,
-                       std::size_t bytes) {
-        return true;
-    }
 
     virtual bool mutate_packet(mm::network::BufferPtr readBuf,
                                mm::network::EndpointPtr sender,

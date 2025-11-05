@@ -169,10 +169,6 @@ public:
 
     static std::shared_ptr<json_rule_based_mutator> fromJsonString(const std::string& typesFile, const std::string& jsonStr, bool bigEndian);
 
-    bool should_mutate(mm::network::BufferPtr readBuf,
-                       mm::network::EndpointPtr sender,
-                       std::size_t bytes) override;
-
     bool mutate_packet(mm::network::BufferPtr readBuf,
                        mm::network::EndpointPtr sender,
                        std::size_t bytes) override;
