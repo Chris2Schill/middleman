@@ -1,6 +1,7 @@
 #include "connection_widget.hpp"
 
 #include <QLineEdit>
+#include <QLabel>
 #include <QSpinBox>
 #include <QCheckBox>
 #include <QPushButton>
@@ -56,23 +57,43 @@ ConnectionWidget::ConnectionWidget(QWidget* parent)
     remotePortSpin_->setValue(9001);
     stopBtn_->setEnabled(false);
 
-    auto* form = new QFormLayout;
-    form->addRow("Local host:",  localHostEdit_);
-    form->addRow("Local port:",  localPortSpin_);
-    form->addRow("Remote host:", remoteHostEdit_);
-    form->addRow("Remote port:", remotePortSpin_);
+    auto* row = new QHBoxLayout;
+    row->addWidget(new QLabel("Source:", this));
+    row->addWidget(localHostEdit_);
+    row->addWidget(new QLabel(":", this));
+    row->addWidget(localPortSpin_);
 
-    auto* buttons = new QHBoxLayout;
-    buttons->addWidget(startBtn_);
-    buttons->addWidget(stopBtn_);
-    buttons->addStretch();
+    row->addSpacing(15);
 
-    auto* root = new QVBoxLayout;
-    root->addLayout(form);
-    root->addWidget(logStdoutCheck_);
-    root->addLayout(buttons);
-    root->addStretch();
-    setLayout(root);
+    row->addWidget(new QLabel("Sink:", this));
+    row->addWidget(remoteHostEdit_);
+    row->addWidget(new QLabel(":", this));
+    row->addWidget(remotePortSpin_);
+
+    row->addSpacing(15);
+
+    row->addWidget(logStdoutCheck_);
+
+    row->addSpacing(10);
+
+    row->addWidget(startBtn_);
+    row->addWidget(stopBtn_);
+
+    row->setContentsMargins(4,4,4,4);
+    row->setSpacing(6);
+
+    setLayout(row);
+    // auto* buttons = new QHBoxLayout;
+    // buttons->addWidget(startBtn_);
+    // buttons->addWidget(stopBtn_);
+    // buttons->addStretch();
+    //
+    // auto* root = new QVBoxLayout;
+    // root->addLayout(form);
+    // root->addWidget(logStdoutCheck_);
+    // root->addLayout(buttons);
+    // root->addStretch();
+    // setLayout(root);
 
     wireSignals();
 
@@ -81,7 +102,7 @@ ConnectionWidget::ConnectionWidget(QWidget* parent)
     layout()->setSizeConstraint(QLayout::SetFixedSize);
 
     // Ensure the widget itself does not expand
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     
     // Optionally enforce minimum size to what’s required
     adjustSize();
