@@ -24,47 +24,36 @@ RulesEditorWidget::RulesEditorWidget(QWidget *parent)
     root->setContentsMargins(2,2,2,2);
     root->setSpacing(2);
 
-    /* --- Top bar / toolbar-like container --- */
-    auto* topBarWrap = new QWidget;              // give it an objectName so CSS applies
-    topBarWrap->setObjectName("TopBar");
-    auto* ruleBar = new QHBoxLayout(topBarWrap);
-    ruleBar->setContentsMargins(1,1,1,1);
-    ruleBar->setSpacing(2);
+    // Create a compact top bar placed inside the tab widget header
+    auto* topBarWidget = new QWidget(this);
+    topBarWidget->setObjectName("TopBar");   // styling still applies
+    auto* topBar = new QHBoxLayout(topBarWidget);
+    topBar->setContentsMargins(2,2,2,2);
+    topBar->setSpacing(4);
 
-    auto* rulesLbl = new QLabel("Rules");
-    rulesLbl->setProperty("role", "title");
-
-    importBtn_ = makeIconToolButton(QStyle::SP_DialogOpenButton,  "Import schema (Ctrl+O)");
-    exportBtn_ = makeIconToolButton(QStyle::SP_DialogSaveButton,  "Export schema (Ctrl+S)");
+    // Buttons (use your same ones)
+    importBtn_ = makeIconToolButton(QStyle::SP_DialogOpenButton, "Import schema (Ctrl+O)");
+    exportBtn_ = makeIconToolButton(QStyle::SP_DialogSaveButton, "Export schema (Ctrl+S)");
     addRuleBtn_ = makeIconToolButton(QStyle::SP_FileDialogNewFolder, "Add Rule");
-    delRuleBtn_ = makeIconToolButton(QStyle::SP_TrashIcon, "Delete current Rule");
+    delRuleBtn_ = makeIconToolButton(QStyle::SP_TrashIcon, "Delete Rule");
 
-    // left title
-    ruleBar->addWidget(rulesLbl);
-    ruleBar->addSpacing(8);
-    ruleBar->addStretch();
+    topBar->addWidget(importBtn_);
+    topBar->addWidget(exportBtn_);
+    topBar->addWidget(addRuleBtn_);
+    topBar->addWidget(delRuleBtn_);
 
-    // center/right controls
-    // group import/export together
-    ruleBar->addWidget(importBtn_);
-    ruleBar->addWidget(exportBtn_);
+    // small padding so buttons don't crowd tab text
+    topBar->addSpacing(6);
 
-    // a tiny separator
-    auto addSep = [&](){
-        auto* sep = new QWidget; sep->setFixedWidth(8); return sep;
-    };
-    ruleBar->addWidget(addSep());
-
-    // rule controls
-    ruleBar->addWidget(addRuleBtn_);
-    ruleBar->addWidget(delRuleBtn_);
-
-    root->addWidget(topBarWrap);
-
-    /* --- Tabs --- */
+    // No stretch — the buttons belong *inline* with the tab bar
     tabs_ = new QTabWidget(this);
-    tabs_->setContentsMargins(2,2,2,2);
+    tabs_->setContentsMargins(0,0,0,0);
     tabs_->setTabsClosable(false);
+
+    // Attach top bar to the right side of the tab bar:
+    tabs_->setCornerWidget(topBarWidget, Qt::TopLeftCorner);
+
+    // Now add the tab widget to the layout
     root->addWidget(tabs_);
 
     /* --- Global style --- */
@@ -162,7 +151,7 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     condCard->setProperty("card", true);
     auto* condWrap = new QWidget(condCard);
     auto* condCardLayout = new QVBoxLayout(condCard);
-    condCardLayout->setContentsMargins(3,3,3,3);
+    condCardLayout->setContentsMargins(0,0,0,0);
     condCardLayout->addWidget(condWrap);
 
     auto* condLayout = new QVBoxLayout(condWrap);
@@ -187,7 +176,7 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     mutCard->setProperty("card", true);
     auto* mutWrap = new QWidget(mutCard);
     auto* mutCardLayout = new QVBoxLayout(mutCard);
-    mutCardLayout->setContentsMargins(3,3,3,3);
+    mutCardLayout->setContentsMargins(0,0,0,0);
     mutCardLayout->addWidget(mutWrap);
 
     auto* mutLayout = new QVBoxLayout(mutWrap);
@@ -695,7 +684,7 @@ QToolButton* RulesEditorWidget::makeIconToolButton(QStyle::StandardPixmap sp, co
     b->setIcon(stdIcon(sp));
     b->setToolTip(tip);
     b->setAutoRaise(true);
-    b->setIconSize(QSize(12,12));
+    b->setIconSize(QSize(16,16));
     b->setToolButtonStyle(Qt::ToolButtonIconOnly);
     return b;
 }

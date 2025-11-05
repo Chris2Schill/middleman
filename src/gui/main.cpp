@@ -85,6 +85,7 @@ public:
         };
 
         layout->addWidget(ui.tabWidget);
+        ui.tabWidget->setContentsMargins(0,0,0,0);
         ui.tabWidget->addTab(ui.schemaEditor, "Packets");
         ui.tabWidget->addTab(ui.rulesEditor, "Rules");
 
