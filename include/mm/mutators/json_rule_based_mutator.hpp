@@ -167,6 +167,8 @@ class json_rule_based_mutator : public packet_mutator {
 public:
     json_rule_based_mutator(const std::string& typesfile, const std::string& rulefile, bool to_big_endian = false);
 
+    static std::shared_ptr<json_rule_based_mutator> fromJsonString(const std::string& typesFile, const std::string& jsonStr, bool bigEndian);
+
     bool should_mutate(mm::network::BufferPtr readBuf,
                        mm::network::EndpointPtr sender,
                        std::size_t bytes) override;
@@ -176,7 +178,7 @@ public:
                        std::size_t bytes) override;
 
 private:
-    std::vector<Rule> parse_rules(const packet_types& packet_types, json data);
+    static std::vector<Rule> parse_rules(const packet_types& packet_types, json data);
     const Mutations* next_mutation;
     bool to_network_byte_order;
 };

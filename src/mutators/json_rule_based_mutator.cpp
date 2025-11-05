@@ -29,8 +29,10 @@ json_rule_based_mutator::json_rule_based_mutator(const std::string& typesfile, c
     packet_types_list = packet_description_from_json(read_configuration(typesfile));
     spdlog::info(packet_types_list[0].dump());
 
-    spdlog::info("Parsing rules file: " + rulefile);
-    rules = parse_rules(packet_types_list, read_configuration(rulefile));
+    if (!rulefile.empty()) {
+        spdlog::info("Parsing rules file: " + rulefile);
+        rules = parse_rules(packet_types_list, read_configuration(rulefile));
+    }
     next_mutation = nullptr;
 
     to_network_byte_order = to_big_endian;
@@ -344,5 +346,11 @@ static int parse_packets_data_field(const json& data, int offset, std::string fi
         }
     }
     return offset;
+}
+
+std::shared_ptr<mm::mutators::json_rule_based_mutator> mm::mutators::json_rule_based_mutator::fromJsonString(const std::string& typesFile, const std::string& jsonStr, bool to_big_endian){
+    auto mutator = std::make_shared<mm::mutators::json_rule_based_mutator>(typesFile, "", to_big_endian);
+    mutator->rules = parse_rules(mutator->packet_types_list, json::parse(jsonStr));
+    return mutator;
 }
 

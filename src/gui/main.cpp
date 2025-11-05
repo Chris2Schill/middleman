@@ -63,20 +63,23 @@ public:
         ui.connectionEditor->setConfig(defaultConn);
 
         ui.connectionEditor->onStart = [this](const ConnectionConfig& c) {
+            auto rulesJsonStr = ui.rulesEditor->schemaJson().toStdString();
+
             bool to_big_endian = true;
             mm::network::middleman_proxy::settings settings = {
                 .local_host  = c.localHost.toStdString(),
                 .local_port  = (unsigned short)c.localPort,
                 .remote_host = c.remoteHost.toStdString(),
                 .remote_port = (unsigned short)c.remotePort,
-                .mutator = std::make_shared<mm::mutators::json_rule_based_mutator>("dis_types.json", "test_rules2.json", to_big_endian),
-                .log_to_stdout = true
+                .mutator = mm::mutators::json_rule_based_mutator::fromJsonString("dis_pdus_scaffold.json", rulesJsonStr, to_big_endian),
             };
 
             proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);
+            ui.rulesEditor->setEnabled(false);
         };
         ui.connectionEditor->onStop = [this]() {
             proxy_server = nullptr;
+            ui.rulesEditor->setEnabled(true);
         };
 
         layout->addWidget(ui.tabWidget);
