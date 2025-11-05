@@ -112,7 +112,13 @@ private:
     }
 
     void connectSignals() {
-        connect(tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem*, int){ /* placeholder */ });
+        // Rebuild tree when the selected packet changes
+        connect(packetCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int){
+            currentPacket = packetCombo->currentData().toJsonObject();
+            rebuildTree();
+        });
+        // Placeholder for future change tracking on values
+        connect(tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem*, int){ /* no-op */ });
     }
 
     void loadSchemaFromFile(const QString& filePath) {
