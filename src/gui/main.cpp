@@ -72,6 +72,7 @@ public:
                 .local_port  = (unsigned short)c.localPort,
                 .remote_host = c.remoteHost.toStdString(),
                 .remote_port = (unsigned short)c.remotePort,
+                .multicast_group = "224.10.10.19",
                 .mutator = mm::mutators::json_rule_based_mutator::fromJsonString("dis_pdus_scaffold.json", rulesJsonStr, to_big_endian),
                 .log_to_stdout = ui.connectionEditor->logStdoutChecked(),
             };

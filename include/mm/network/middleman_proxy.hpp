@@ -26,6 +26,7 @@ public:
         unsigned short local_port;
         std::string remote_host;
         unsigned short remote_port;
+        std::string multicast_group;
         std::shared_ptr<mutators::packet_mutator> mutator;
         bool log_to_stdout = false;
     };
@@ -56,12 +57,23 @@ public:
         src_ep  = {boost::asio::ip::make_address(cfg.local_host), cfg.local_port};
         sink_ep = {boost::asio::ip::make_address(cfg.remote_host), cfg.remote_port};
 
-        bool reuse = true;
-        auto rc = socket->startListening(src_ep, reuse);
-        if (rc != UDPTransport::SUCCESS) {
-            spdlog::error("Failed to start middleman proxy socket: errcode {}", (int)rc);
-            exit(-1);
+        if (!cfg.multicast_group.empty()) {
+            bool reuse = true;
+            auto rc = socket->startListeningMulticast(src_ep, cfg.multicast_group, reuse);
+            if (rc != UDPTransport::SUCCESS) {
+                spdlog::error("Failed to start middleman proxy socket: errcode {}", (int)rc);
+                exit(-1);
+            }
         }
+        else {
+            bool reuse = true;
+            auto rc = socket->startListening(src_ep, reuse);
+            if (rc != UDPTransport::SUCCESS) {
+                spdlog::error("Failed to start middleman proxy socket: errcode {}", (int)rc);
+                exit(-1);
+            }
+        }
+
     }
 
     void recv_callback(mm::network::UDPTransportPtr socket,
@@ -69,7 +81,7 @@ public:
                        mm::network::EndpointPtr sender,
                        const boost::system::error_code& ec,
                        std::size_t bytes) {
-        spdlog::info("RECEVID");
+        spdlog::info("Received {} bytes", bytes);
         // if (sender->address() == src_ep.address() && sender->port() != cfg.local_port) { return; }
 
         if (cfg.log_to_stdout) {
