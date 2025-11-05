@@ -9,6 +9,23 @@
 #include <QVBoxLayout>
 #include <QStyle>
 #include <QApplication>
+#include <QPainter>
+#include <QPixmap>
+
+// Helper: tint a standard icon with a given color
+static QIcon tintedIcon(const QIcon& baseIcon, const QColor& color, const QSize& size = QSize(24, 24)) {
+    QPixmap pix = baseIcon.pixmap(size);
+    QPixmap tinted(pix.size());
+    tinted.fill(Qt::transparent);
+
+    QPainter p(&tinted);
+    p.drawPixmap(0, 0, pix);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(tinted.rect(), color);
+    p.end();
+
+    return QIcon(tinted);
+}
 
 ConnectionWidget::ConnectionWidget(QWidget* parent)
     : QWidget(parent)
@@ -21,13 +38,16 @@ ConnectionWidget::ConnectionWidget(QWidget* parent)
     startBtn_       = new QPushButton(this);
     stopBtn_        = new QPushButton(this);
 
-    // Use standard Qt icons (you can replace with your own QIcon)
-    startBtn_->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-    stopBtn_->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+    // Create colored icons
+    auto playIcon = style()->standardIcon(QStyle::SP_MediaPlay);
+    auto stopIcon = style()->standardIcon(QStyle::SP_MediaStop);
+
+    startBtn_->setIcon(tintedIcon(playIcon, QColor(0, 180, 0)));  // green
+    stopBtn_->setIcon(tintedIcon(stopIcon, QColor(200, 0, 0)));   // red
     startBtn_->setToolTip("Start");
     stopBtn_->setToolTip("Stop");
 
-    // Layouts
+    // Layout setup
     localHostEdit_->setPlaceholderText("127.0.0.1");
     remoteHostEdit_->setPlaceholderText("example.com");
     localPortSpin_->setRange(0, 65535);
@@ -55,16 +75,26 @@ ConnectionWidget::ConnectionWidget(QWidget* parent)
     setLayout(root);
 
     wireSignals();
+
+    
+    // Make sure layout fits tight to content
+    layout()->setSizeConstraint(QLayout::SetFixedSize);
+
+    // Ensure the widget itself does not expand
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    
+    // Optionally enforce minimum size to what’s required
+    adjustSize();
 }
 
 void ConnectionWidget::wireSignals() {
-    connect(startBtn_, &QPushButton::clicked, this, [this](){
+    connect(startBtn_, &QPushButton::clicked, this, [this]() {
         if (running_) return;
         if (onStart) onStart(config());
         setRunning(true);
     });
 
-    connect(stopBtn_, &QPushButton::clicked, this, [this](){
+    connect(stopBtn_, &QPushButton::clicked, this, [this]() {
         if (!running_) return;
         if (onStop) onStop();
         setRunning(false);
