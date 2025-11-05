@@ -83,55 +83,65 @@ std::vector<Rule> json_rule_based_mutator::parse_rules(const packet_types& packe
         }
 
         for (const json& condition_json : conditions_json) {
-            std::string condition_field = condition_json["field"].get<std::string>();
-            std::string operator_type = condition_json["operator"].get<std::string>();
-            const packet_description::field* condition_field_ptr = get_field_ptr(condition_field, packet_types);
-            if (!condition_field_ptr) {
-                spdlog::error("Failed to find field {} for condition", condition_field);
-                continue;
-            }
-            int data_size = data_size_from_type(condition_field_ptr->type);
-            if (data_size <= 0) {
-                spdlog::error("Failed to find data size for condition field {}", condition_field); 
-                continue;
-            }
-            Condition cd{
-                .data_offset = condition_field_ptr->offset,
-                .data_size = data_size,
-                .type = condition_field_ptr->type,
-                .operation = condition_operation_from_string(operator_type),
-                .value_d = condition_json["value"].get<double>(),
-                .value_u = condition_json["value"].get<uint64_t>(),
-                .value_i = condition_json["value"].get<int64_t>(),
-            };
+            try {
+                std::string condition_field = condition_json["field"].get<std::string>();
+                std::string operator_type = condition_json["operator"].get<std::string>();
+                const packet_description::field* condition_field_ptr = get_field_ptr(condition_field, packet_types);
+                if (!condition_field_ptr) {
+                    spdlog::error("Failed to find field {} for condition", condition_field);
+                    continue;
+                }
+                int data_size = data_size_from_type(condition_field_ptr->type);
+                if (data_size <= 0) {
+                    spdlog::error("Failed to find data size for condition field {}", condition_field); 
+                    continue;
+                }
+                Condition cd{
+                    .data_offset = condition_field_ptr->offset,
+                        .data_size = data_size,
+                        .type = condition_field_ptr->type,
+                        .operation = condition_operation_from_string(operator_type),
+                        .value_d = condition_json["value"].get<double>(),
+                        .value_u = condition_json["value"].get<uint64_t>(),
+                        .value_i = condition_json["value"].get<int64_t>(),
+                };
 
-            if (cd.operation == OP_INVALID) {
-                spdlog::error("Failed to convert " + operator_type + " to a valid cond_operation ");
-                continue;
-            }
+                if (cd.operation == OP_INVALID) {
+                    spdlog::error("Failed to convert " + operator_type + " to a valid cond_operation ");
+                    continue;
+                }
 
-            if (cd.type == INVALID_DATA_TYPE) {
-                spdlog::error("Could not find valid data type for condition field " + condition_field);
-                continue;
+                if (cd.type == INVALID_DATA_TYPE) {
+                    spdlog::error("Could not find valid data type for condition field " + condition_field);
+                    continue;
+                }
+                rule.conditions.push_back(cd);
             }
-            rule.conditions.push_back(cd);
+            catch(...) {
+                spdlog::error("Failed to parse condition");
+            }
         }
 
         for (const auto& mutation_json : rule_json["mutations"]) {
-            std::string field_name = mutation_json["field"].get<std::string>();
-            const packet_description::field* field = get_field_ptr(field_name, packet_types);
-            if (!field) {
-                spdlog::error("Failed to find field {} for mutation", field_name);
-                continue;
+            try {
+                std::string field_name = mutation_json["field"].get<std::string>();
+                const packet_description::field* field = get_field_ptr(field_name, packet_types);
+                if (!field) {
+                    spdlog::error("Failed to find field {} for mutation", field_name);
+                    continue;
+                }
+                rule.mutations.push_back(Mutation{
+                        .data_offset = field->offset,
+                        .data_size = data_size_from_type(field->type),
+                        .type = field->type,
+                        .new_value_d = mutation_json["new_value"].get<double>(),
+                        .new_value_u = mutation_json["new_value"].get<uint64_t>(),
+                        .new_value_i = mutation_json["new_value"].get<int64_t>(),
+                        });
             }
-            rule.mutations.push_back(Mutation{
-                .data_offset = field->offset,
-                .data_size = data_size_from_type(field->type),
-                .type = field->type,
-                .new_value_d = mutation_json["new_value"].get<double>(),
-                .new_value_u = mutation_json["new_value"].get<uint64_t>(),
-                .new_value_i = mutation_json["new_value"].get<int64_t>(),
-            });
+            catch(...) {
+                spdlog::error("Failed to parse mutation");
+            }
         }
         rules.push_back(rule);
     }
