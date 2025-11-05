@@ -21,6 +21,7 @@
 #include <mm/mutators/json_rule_based_mutator.hpp>
 #include <mm/config_reader.hpp>
 #include "schema_editor.hpp"
+#include "connection_widget.hpp"
 
 
 class AsioThread : public QThread {
@@ -48,47 +49,34 @@ public:
 
         layout->setContentsMargins(0,0,0,0);
 
-        layout->addWidget(ui.configurationSection);
-        ui.configurationSection->setLayout(ui.configurationSectionLayout);
-        ui.configurationSectionLayout->addWidget(ui.localHostEdit, 0, 0);
-        ui.configurationSectionLayout->addWidget(new QLabel("local host"), 0, 1);
-        ui.configurationSectionLayout->addWidget(ui.localPortEdit, 1, 0);
-        ui.configurationSectionLayout->addWidget(new QLabel("local port"), 1, 1);
-        ui.configurationSectionLayout->addWidget(ui.remoteHostEdit, 0, 2);
-        ui.configurationSectionLayout->addWidget(new QLabel("remote host"), 0, 3);
-        ui.configurationSectionLayout->addWidget(ui.remotePortEdit, 1, 2);
-        ui.configurationSectionLayout->addWidget(new QLabel("remote port"), 1, 3);
-        ui.configurationSectionLayout->addWidget(ui.logToStdoutCheckbox, 2, 0);
-        ui.configurationSectionLayout->addWidget(new QLabel("log to stdout"), 2, 1);
-        // Default config
-        ui.localHostEdit->setText("0.0.0.0");
-        ui.localPortEdit->setText("3000");
-        ui.remoteHostEdit->setText("172.28.208.1");
-        ui.remotePortEdit->setText("3000");
+        layout->addWidget(ui.connectionWidget);
 
+        // // Default config
+        ConnectionConfig defaultConn = {
+            .localHost = "0.0.0.0",
+            .localPort = 3000,
+            .remoteHost = "172.28.208.1",
+            .remotePort = 3000,
+            .logToStdout = true,
+        };
+        ui.connectionWidget->setConfig(defaultConn);
 
-        layout->addWidget(ui.startButton);
-        connect(ui.startButton, &QPushButton::released, this, [this](){
-            if (ui.configurationSection->isEnabled()) {
+        ui.connectionWidget->onStart = [this](const ConnectionConfig& c) {
+            bool to_big_endian = true;
+            mm::network::middleman_proxy::settings settings = {
+                .local_host  = c.localHost.toStdString(),
+                .local_port  = (unsigned short)c.localPort,
+                .remote_host = c.remoteHost.toStdString(),
+                .remote_port = (unsigned short)c.remotePort,
+                .mutator = std::make_shared<mm::mutators::json_rule_based_mutator>("dis_types.json", "test_rules2.json", to_big_endian),
+                .log_to_stdout = true
+            };
 
-                bool to_big_endian = true;
-                mm::network::middleman_proxy::settings settings = {
-                    .local_host  = ui.localHostEdit->text().toStdString(),
-                    .local_port  = ui.localPortEdit->text().toUShort(),
-                    .remote_host = ui.remoteHostEdit->text().toStdString(),
-                    .remote_port = ui.remotePortEdit->text().toUShort(),
-                    .mutator = std::make_shared<mm::mutators::json_rule_based_mutator>("dis_types.json", "test_rules2.json", to_big_endian),
-                    .log_to_stdout = true
-                };
-
-                proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);
-                disableConfig();
-            }
-            else {
-                proxy_server = nullptr;
-                enableConfig();
-            }
-        });
+            proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);
+        };
+        ui.connectionWidget->onStop = [this]() {
+            proxy_server = nullptr;
+        };
 
         layout->addWidget(ui.tabWidget);
         ui.tabWidget->addTab(ui.schemaEditor, "Packets");
@@ -99,18 +87,10 @@ public:
         });
     }
 
-    void disableConfig() {
-        ui.configurationSection->setDisabled(true);
-        ui.startButton->setText("Stop");
-    }
-    void enableConfig() {
-        ui.configurationSection->setDisabled(false);
-        ui.startButton->setText("Start");
-    }
-
     struct ui_container {
         QTabWidget* tabWidget = new QTabWidget;
         SchemaEditor* schemaEditor = new SchemaEditor;
+        ConnectionWidget* connectionWidget = new ConnectionWidget;
 
         QWidget* configurationSection = new QWidget;
         QGridLayout* configurationSectionLayout = new QGridLayout;

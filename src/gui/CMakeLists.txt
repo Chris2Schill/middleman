@@ -24,8 +24,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+set(SOURCES
+    main.cpp
+    connection_widget.cpp
+)
 
-add_executable(mmgui main.cpp)
+add_executable(mmgui ${SOURCES})
 # add_executable(mmgui gpt.cpp)
 target_link_libraries(mmgui PRIVATE Qt6::Widgets spdlog::spdlog mmcore)
 target_include_directories(mmgui PRIVATE .)
