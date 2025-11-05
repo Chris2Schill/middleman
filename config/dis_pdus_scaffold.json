@@ -404,12 +404,25 @@
           ]
         },
         {
-          "value": "event_id",
-          "type": "uint32"
+          "struct": "event_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
         },
         {
           "value": "fire_mission_index",
-          "type": "uint16"
+          "type": "uint32"
         },
         {
           "struct": "entity_location",
@@ -442,6 +455,60 @@
             {
               "value": "phi",
               "type": "float"
+            }
+          ]
+        },
+        {
+          "struct": "burst_descriptor",
+          "data": [
+            {
+                "struct": "munition",
+                "data": [
+                    {
+                      "value": "kind",
+                      "type": "uint8"
+                    },
+                    {
+                      "value": "domain",
+                      "type": "uint8"
+                    },
+                    {
+                      "value": "country",
+                      "type": "uint16"
+                    },
+                    {
+                      "value": "category",
+                      "type": "uint8"
+                    },
+                    {
+                      "value": "subcategory",
+                      "type": "uint8"
+                    },
+                    {
+                      "value": "specific",
+                      "type": "uint8"
+                    },
+                    {
+                      "value": "extra",
+                      "type": "uint8"
+                    }
+                ]
+            },
+            {
+              "value": "warhead",
+              "type": "uint16"
+            },
+            {
+              "value": "fuse",
+              "type": "uint16"
+            },
+            {
+              "value": "quantity",
+              "type": "uint16"
+            },
+            {
+              "value": "rate",
+              "type": "uint16"
             }
           ]
         }
