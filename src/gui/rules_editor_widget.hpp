@@ -53,6 +53,11 @@ private:
     QToolButton*  importBtn_   = nullptr;
     QToolButton*  exportBtn_   = nullptr;
 
+    QIcon stdIcon(QStyle::StandardPixmap sp) const;
+    QToolButton* makeIconToolButton(QStyle::StandardPixmap sp, const QString& tip);
+    void applyModernStyle();
+    void polishTable(QTableWidget* t);
+
     // UI helpers
     QComboBox*  makeOperatorCombo(const QString& current = QString());
     QComboBox*  makeTypeCombo(ValueType initial);

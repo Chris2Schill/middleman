@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QSaveFile>
+#include <QShortcut>
 
 static inline QToolButton* makeToolButton(const QString& text, const QString& tt) {
     auto* b = new QToolButton;
@@ -20,38 +21,68 @@ RulesEditorWidget::RulesEditorWidget(QWidget *parent)
     : QWidget(parent)
 {
     auto* root = new QVBoxLayout(this);
+    root->setContentsMargins(2,2,2,2);
+    root->setSpacing(2);
 
-    // Top bar for rules add/remove
-    auto* ruleBar = new QHBoxLayout;
+    /* --- Top bar / toolbar-like container --- */
+    auto* topBarWrap = new QWidget;              // give it an objectName so CSS applies
+    topBarWrap->setObjectName("TopBar");
+    auto* ruleBar = new QHBoxLayout(topBarWrap);
+    ruleBar->setContentsMargins(1,1,1,1);
+    ruleBar->setSpacing(2);
+
     auto* rulesLbl = new QLabel("Rules");
-    rulesLbl->setStyleSheet("font-weight: 600;");
-    importBtn_ = makeToolButton("Import…", "Load schema from a JSON file");
-    exportBtn_ = makeToolButton("Export…", "Save schema to a JSON file");
-    addRuleBtn_ = makeToolButton("+ Rule", "Add a new rule");
-    delRuleBtn_ = makeToolButton("− Rule", "Delete current rule");
+    rulesLbl->setProperty("role", "title");
+
+    importBtn_ = makeIconToolButton(QStyle::SP_DialogOpenButton,  "Import schema (Ctrl+O)");
+    exportBtn_ = makeIconToolButton(QStyle::SP_DialogSaveButton,  "Export schema (Ctrl+S)");
+    addRuleBtn_ = makeIconToolButton(QStyle::SP_FileDialogNewFolder, "Add Rule");
+    delRuleBtn_ = makeIconToolButton(QStyle::SP_TrashIcon, "Delete current Rule");
+
+    // left title
     ruleBar->addWidget(rulesLbl);
+    ruleBar->addSpacing(8);
     ruleBar->addStretch();
+
+    // center/right controls
+    // group import/export together
     ruleBar->addWidget(importBtn_);
     ruleBar->addWidget(exportBtn_);
-    ruleBar->addSpacing(12);
+
+    // a tiny separator
+    auto addSep = [&](){
+        auto* sep = new QWidget; sep->setFixedWidth(8); return sep;
+    };
+    ruleBar->addWidget(addSep());
+
+    // rule controls
     ruleBar->addWidget(addRuleBtn_);
     ruleBar->addWidget(delRuleBtn_);
-    root->addLayout(ruleBar);
 
+    root->addWidget(topBarWrap);
+
+    /* --- Tabs --- */
     tabs_ = new QTabWidget(this);
+    tabs_->setContentsMargins(2,2,2,2);
     tabs_->setTabsClosable(false);
     root->addWidget(tabs_);
 
-    // Keep compact
-    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    /* --- Global style --- */
+    applyModernStyle();
+    QFont f = font();
+    f.setPointSizeF(std::max(7.5, f.pointSizeF() - 1.0));   // guard against too small
+    setFont(f);
 
-    // Create an initial empty rule
+    /* --- Initial rule and wiring --- */
     onAddRule();
-
     connect(addRuleBtn_, &QToolButton::clicked, this, &RulesEditorWidget::onAddRule);
     connect(delRuleBtn_, &QToolButton::clicked, this, &RulesEditorWidget::onDelRule);
     connect(importBtn_, &QToolButton::clicked, this, [this]{ loadSchemaFromDialog(); });
     connect(exportBtn_, &QToolButton::clicked, this, [this]{ saveSchemaToDialog(true); });
+
+    /* --- Shortcuts --- */
+    new QShortcut(QKeySequence::Open,  this, [this]{ loadSchemaFromDialog(); });
+    new QShortcut(QKeySequence::Save,  this, [this]{ saveSchemaToDialog(true); });
 }
 
 RulesEditorWidget::RulesEditorWidget(const QString& schemaFilePath, QWidget* parent)
@@ -119,20 +150,27 @@ void RulesEditorWidget::setupMutationsTable(QTableWidget* t) {
 
 RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     RulePage rp;
-
     rp.page = new QWidget;
     auto* v = new QVBoxLayout(rp.page);
+    v->setContentsMargins(0,0,0,0);
+    v->setSpacing(10);
 
     auto* splitter = new QSplitter(Qt::Vertical, rp.page);
 
-    // Conditions area
-    auto* condWrap = new QWidget;
+    /* --- Conditions card --- */
+    auto* condCard = new QFrame;
+    condCard->setProperty("card", true);
+    auto* condWrap = new QWidget(condCard);
+    auto* condCardLayout = new QVBoxLayout(condCard);
+    condCardLayout->setContentsMargins(3,3,3,3);
+    condCardLayout->addWidget(condWrap);
+
     auto* condLayout = new QVBoxLayout(condWrap);
     auto* condBar = new QHBoxLayout;
     auto* condLbl = new QLabel("Conditions");
-    condLbl->setStyleSheet("font-weight: 600;");
-    rp.addCond = makeToolButton("+", "Add condition");
-    rp.delCond = makeToolButton("−", "Delete selected condition");
+    condLbl->setProperty("role", "title");
+    rp.addCond = makeIconToolButton(QStyle::SP_FileDialogNewFolder, "Add condition");
+    rp.delCond = makeIconToolButton(QStyle::SP_TrashIcon, "Delete selected condition");
     condBar->addWidget(condLbl);
     condBar->addStretch();
     condBar->addWidget(rp.addCond);
@@ -140,18 +178,24 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     condLayout->addLayout(condBar);
 
     rp.conditions = new QTableWidget;
-    rp.conditions->setObjectName("conditionsTable");
     setupConditionsTable(rp.conditions);
+    polishTable(rp.conditions);
     condLayout->addWidget(rp.conditions);
 
-    // Mutations area
-    auto* mutWrap = new QWidget;
+    /* --- Mutations card --- */
+    auto* mutCard = new QFrame;
+    mutCard->setProperty("card", true);
+    auto* mutWrap = new QWidget(mutCard);
+    auto* mutCardLayout = new QVBoxLayout(mutCard);
+    mutCardLayout->setContentsMargins(3,3,3,3);
+    mutCardLayout->addWidget(mutWrap);
+
     auto* mutLayout = new QVBoxLayout(mutWrap);
     auto* mutBar = new QHBoxLayout;
     auto* mutLbl = new QLabel("Mutations");
-    mutLbl->setStyleSheet("font-weight: 600;");
-    rp.addMut = makeToolButton("+", "Add mutation");
-    rp.delMut = makeToolButton("−", "Delete selected mutation");
+    mutLbl->setProperty("role", "title");
+    rp.addMut = makeIconToolButton(QStyle::SP_FileDialogNewFolder, "Add mutation");
+    rp.delMut = makeIconToolButton(QStyle::SP_TrashIcon, "Delete selected mutation");
     mutBar->addWidget(mutLbl);
     mutBar->addStretch();
     mutBar->addWidget(rp.addMut);
@@ -159,16 +203,21 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     mutLayout->addLayout(mutBar);
 
     rp.mutations = new QTableWidget;
-    rp.mutations->setObjectName("mutationsTable");
     setupMutationsTable(rp.mutations);
+    polishTable(rp.mutations);
     mutLayout->addWidget(rp.mutations);
 
-    splitter->addWidget(condWrap);
-    splitter->addWidget(mutWrap);
+    /* --- Splitter --- */
+    splitter->addWidget(condCard);
+    splitter->addWidget(mutCard);
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 1);
+    splitter->setHandleWidth(2);
 
     v->addWidget(splitter);
+
+    /* wiring stays the same ... */
+
 
     // Wiring for row add/remove
     connect(rp.addCond, &QToolButton::clicked, this, [this, rp]() mutable { addConditionRow(rp); });
@@ -636,3 +685,86 @@ bool RulesEditorWidget::saveSchemaToDialog(bool pretty) {
     }
     return ok;
 }
+
+QIcon RulesEditorWidget::stdIcon(QStyle::StandardPixmap sp) const {
+    return style()->standardIcon(sp, nullptr, this);
+}
+
+QToolButton* RulesEditorWidget::makeIconToolButton(QStyle::StandardPixmap sp, const QString& tip) {
+    auto* b = new QToolButton;
+    b->setIcon(stdIcon(sp));
+    b->setToolTip(tip);
+    b->setAutoRaise(true);
+    b->setIconSize(QSize(12,12));
+    b->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    return b;
+}
+
+void RulesEditorWidget::applyModernStyle() {
+    // soft neutral palette + cards for sections
+    setStyleSheet(R"CSS(
+        RulesEditorWidget {
+            background: palette(base);
+        }
+        QLabel[role="title"] {
+            font-weight: 600;
+            color: palette(windowText);
+        }
+        /* top toolbar row */
+        QWidget#TopBar {
+            background: palette(window);
+            border: 1px solid rgba(0,0,0,25);
+            border-radius: 2px;
+            padding: 3px;
+        }
+        QToolButton {
+            padding: 1px;
+            border-radius: 4px;
+        }
+        QToolButton:hover {
+            background: rgba(0,0,0,6%);
+        }
+        QToolButton:pressed {
+            background: rgba(0,0,0,12%);
+        }
+
+        /* 'cards' around conditions/mutations */
+        QFrame[card="true"] {
+            background: palette(window);
+            border: 1px solid rgba(0,0,0,25);
+            border-radius: 2;
+        }
+
+        /* table visuals */
+        QHeaderView::section {
+            background: rgba(0,0,0,4%);
+            border: none;
+            padding: 1px 4px;
+            font-weight: 500;
+        }
+        QTableView {
+            gridline-color: rgba(0,0,0,18%);
+            selection-background-color: palette(highlight);
+            selection-color: palette(highlightedText);
+            alternate-background-color: rgba(0,0,0,3%);
+        }
+    )CSS");
+}
+
+void RulesEditorWidget::polishTable(QTableWidget* t) {
+    t->setAlternatingRowColors(true);
+    t->setShowGrid(true);
+    t->setWordWrap(false);
+
+    t->verticalHeader()->setDefaultSectionSize(14);      // was 26/20
+    t->horizontalHeader()->setDefaultSectionSize(16);     // header row height
+    t->horizontalHeader()->setHighlightSections(false);
+    t->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+    t->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    // zero padding around the view
+    t->setStyleSheet(R"CSS(
+        QTableView { margin: 0px; padding: 0px; }
+    )CSS");
+}
+
