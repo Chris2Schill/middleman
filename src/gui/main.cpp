@@ -120,6 +120,7 @@ public:
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv); // Create an application object
+    app.setStyle("Fusion");
 
     MainWindow window;
     window.resize(500, 400);      // Set the initial size of the window
