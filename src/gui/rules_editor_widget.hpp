@@ -29,6 +29,7 @@ public:
     QByteArray schemaJson(bool pretty = true);
 
     bool setSchemaFromFile(const QString& filePath, QString* errorOut = nullptr);
+    bool saveSchemaToFile(const QString& filePath, bool pretty = true, QString* errorOut = nullptr);
 
 signals:
     void schemaChanged(const QByteArray &json);
@@ -49,6 +50,8 @@ private:
     QTabWidget*   tabs_       = nullptr;
     QToolButton*  addRuleBtn_ = nullptr;
     QToolButton*  delRuleBtn_ = nullptr;
+    QToolButton*  importBtn_   = nullptr;
+    QToolButton*  exportBtn_   = nullptr;
 
     // UI helpers
     QComboBox*  makeOperatorCombo(const QString& current = QString());
@@ -81,6 +84,7 @@ private:
 
 private slots:
     bool loadSchemaFromDialog();
+    bool saveSchemaToDialog(bool pretty = true);
 
     void onAddRule();
     void onDelRule();

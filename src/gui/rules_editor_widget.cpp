@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QSaveFile>
 
 static inline QToolButton* makeToolButton(const QString& text, const QString& tt) {
     auto* b = new QToolButton;
@@ -24,10 +25,15 @@ RulesEditorWidget::RulesEditorWidget(QWidget *parent)
     auto* ruleBar = new QHBoxLayout;
     auto* rulesLbl = new QLabel("Rules");
     rulesLbl->setStyleSheet("font-weight: 600;");
+    importBtn_ = makeToolButton("Import…", "Load schema from a JSON file");
+    exportBtn_ = makeToolButton("Export…", "Save schema to a JSON file");
     addRuleBtn_ = makeToolButton("+ Rule", "Add a new rule");
     delRuleBtn_ = makeToolButton("− Rule", "Delete current rule");
     ruleBar->addWidget(rulesLbl);
     ruleBar->addStretch();
+    ruleBar->addWidget(importBtn_);
+    ruleBar->addWidget(exportBtn_);
+    ruleBar->addSpacing(12);
     ruleBar->addWidget(addRuleBtn_);
     ruleBar->addWidget(delRuleBtn_);
     root->addLayout(ruleBar);
@@ -44,6 +50,8 @@ RulesEditorWidget::RulesEditorWidget(QWidget *parent)
 
     connect(addRuleBtn_, &QToolButton::clicked, this, &RulesEditorWidget::onAddRule);
     connect(delRuleBtn_, &QToolButton::clicked, this, &RulesEditorWidget::onDelRule);
+    connect(importBtn_, &QToolButton::clicked, this, [this]{ loadSchemaFromDialog(); });
+    connect(exportBtn_, &QToolButton::clicked, this, [this]{ saveSchemaToDialog(true); });
 }
 
 RulesEditorWidget::RulesEditorWidget(const QString& schemaFilePath, QWidget* parent)
@@ -132,6 +140,7 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     condLayout->addLayout(condBar);
 
     rp.conditions = new QTableWidget;
+    rp.conditions->setObjectName("conditionsTable");
     setupConditionsTable(rp.conditions);
     condLayout->addWidget(rp.conditions);
 
@@ -150,6 +159,7 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     mutLayout->addLayout(mutBar);
 
     rp.mutations = new QTableWidget;
+    rp.mutations->setObjectName("mutationsTable");
     setupMutationsTable(rp.mutations);
     mutLayout->addWidget(rp.mutations);
 
@@ -409,23 +419,15 @@ QByteArray RulesEditorWidget::schemaJson(bool pretty) {
 
     for (int i = 0; i < tabs_->count(); ++i) {
         auto* page = tabs_->widget(i);
-        // Reconstruct a RulePage façade to read widgets
-        RulePage rp;
-        rp.page = page;
-        // Find the tables in this page
-        rp.conditions = page->findChild<QTableWidget*>();
-        rp.mutations  = page->findChildren<QTableWidget*>().size() > 1
-                        ? page->findChildren<QTableWidget*>().at(1)
-                        : nullptr;
 
-        // Slightly safer: locate by labels' proximity—here we rely on creation order.
+        RulePage rp;
+        rp.page       = page;
+        rp.conditions = page->findChild<QTableWidget*>("conditionsTable");
+        rp.mutations  = page->findChild<QTableWidget*>("mutationsTable");
+
         if (!rp.conditions || !rp.mutations) {
-            // fallback: iterate all tables
-            auto tables = page->findChildren<QTableWidget*>();
-            if (tables.size() >= 2) {
-                rp.conditions = tables.at(0);
-                rp.mutations = tables.at(1);
-            }
+            qWarning() << "RulesEditorWidget: could not find tables on tab" << i;
+            continue;
         }
 
         rules.push_back(readRuleFrom(rp));
@@ -433,7 +435,8 @@ QByteArray RulesEditorWidget::schemaJson(bool pretty) {
 
     root["rules"] = rules;
     QJsonDocument doc(root);
-    return pretty ? doc.toJson(QJsonDocument::Indented) : doc.toJson(QJsonDocument::Compact);
+    return pretty ? doc.toJson(QJsonDocument::Indented)
+                  : doc.toJson(QJsonDocument::Compact);
 }
 
 void RulesEditorWidget::emitCurrentSchemaChanged() {
@@ -590,3 +593,46 @@ bool RulesEditorWidget::loadSchemaFromDialog() {
     return ok;
 }
 
+bool RulesEditorWidget::saveSchemaToFile(const QString& filePath, bool pretty, QString* errorOut) {
+    if (filePath.trimmed().isEmpty()) {
+        if (errorOut) *errorOut = QStringLiteral("Empty file path");
+        return false;
+    }
+
+    QSaveFile f(filePath);
+    if (!f.open(QIODevice::WriteOnly)) {
+        if (errorOut) *errorOut = QStringLiteral("Unable to open file for writing");
+        return false;
+    }
+
+    const QByteArray data = schemaJson(pretty);
+    if (f.write(data) != data.size()) {
+        if (errorOut) *errorOut = QStringLiteral("Failed to write all data");
+        f.cancelWriting();
+        return false;
+    }
+
+    if (!f.commit()) {
+        if (errorOut) *errorOut = QStringLiteral("Failed to finalize (commit) save");
+        return false;
+    }
+    return true;
+}
+
+bool RulesEditorWidget::saveSchemaToDialog(bool pretty) {
+    QString path = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Rules Schema As"),
+        QStringLiteral("rules.json"),
+        tr("JSON files (*.json);;All files (*)")
+    );
+    if (path.isEmpty())
+        return false;
+
+    QString err;
+    const bool ok = saveSchemaToFile(path, pretty, &err);
+    if (!ok) {
+        qWarning() << "RulesEditorWidget: could not save schema:" << err;
+    }
+    return ok;
+}
