@@ -1,0 +1,3531 @@
+{
+  "packets": [
+    {
+      "name": "entity_state",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 1,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "force",
+          "type": "uint8"
+        },
+        {
+          "value": "num_articulated_parts",
+          "type": "uint8"
+        },
+        {
+          "struct": "entity_type",
+          "data": [
+            {
+              "value": "kind",
+              "type": "uint8"
+            },
+            {
+              "value": "domain",
+              "type": "uint8"
+            },
+            {
+              "value": "country",
+              "type": "uint16"
+            },
+            {
+              "value": "category",
+              "type": "uint8"
+            },
+            {
+              "value": "subcategory",
+              "type": "uint8"
+            },
+            {
+              "value": "specific",
+              "type": "uint8"
+            },
+            {
+              "value": "extra",
+              "type": "uint8"
+            }
+          ]
+        },
+        {
+          "struct": "alternative_entity_type",
+          "data": [
+            {
+              "value": "kind",
+              "type": "uint8"
+            },
+            {
+              "value": "domain",
+              "type": "uint8"
+            },
+            {
+              "value": "country",
+              "type": "uint16"
+            },
+            {
+              "value": "category",
+              "type": "uint8"
+            },
+            {
+              "value": "subcategory",
+              "type": "uint8"
+            },
+            {
+              "value": "specific",
+              "type": "uint8"
+            },
+            {
+              "value": "extra",
+              "type": "uint8"
+            }
+          ]
+        },
+        {
+          "struct": "entity_linear_velocity",
+          "data": [
+            {
+              "value": "x",
+              "type": "float"
+            },
+            {
+              "value": "y",
+              "type": "float"
+            },
+            {
+              "value": "z",
+              "type": "float"
+            }
+          ]
+        },
+        {
+          "struct": "entity_location",
+          "data": [
+            {
+              "value": "x",
+              "type": "double"
+            },
+            {
+              "value": "y",
+              "type": "double"
+            },
+            {
+              "value": "z",
+              "type": "double"
+            }
+          ]
+        },
+        {
+          "struct": "entity_orientation",
+          "data": [
+            {
+              "value": "psi",
+              "type": "float"
+            },
+            {
+              "value": "theta",
+              "type": "float"
+            },
+            {
+              "value": "phi",
+              "type": "float"
+            }
+          ]
+        },
+        {
+          "struct": "entity_appearance",
+          "data": [
+            {
+              "value": "general",
+              "type": "float"
+            },
+            {
+              "struct": "specific",
+              "data": [
+                {
+                  "value": "land_platforms",
+                  "type": "uint16"
+                },
+                {
+                  "value": "air_platforms",
+                  "type": "uint16"
+                },
+                {
+                  "value": "surface_platforms",
+                  "type": "uint16"
+                },
+                {
+                  "value": "subsurface_platforms",
+                  "type": "uint16"
+                },
+                {
+                  "value": "space_platforms",
+                  "type": "uint16"
+                },
+                {
+                  "value": "guided_munitions",
+                  "type": "uint16"
+                },
+                {
+                  "value": "life_forms",
+                  "type": "uint16"
+                },
+                {
+                  "value": "environmentals",
+                  "type": "uint16"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "struct": "dead_reckoning",
+          "data": [
+            {
+              "value": "algorithm",
+              "type": "uint8"
+            },
+            {
+              "struct": "other",
+              "data": [
+                {
+                  "value": "padding",
+                  "size": 120
+                }
+              ]
+            },
+            {
+              "struct": "entity_linear_acceleration",
+              "data": [
+                {
+                  "value": "x",
+                  "type": "float"
+                },
+                {
+                  "value": "y",
+                  "type": "float"
+                },
+                {
+                  "value": "z",
+                  "type": "float"
+                }
+              ]
+            },
+            {
+              "struct": "entity_angular_velocity",
+              "data": [
+                {
+                  "value": "x",
+                  "type": "float"
+                },
+                {
+                  "value": "y",
+                  "type": "float"
+                },
+                {
+                  "value": "z",
+                  "type": "float"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "struct": "entity_marking",
+          "data": [
+            {
+              "value": "char_set",
+              "type": "int8"
+            },
+            {
+              "value": "char_set",
+              "size": 88
+            }
+          ]
+        },
+        {
+          "value": "entity_capabilities",
+          "type": "uint32"
+        },
+        {
+          "struct": "articulation_parameter",
+          "data": [
+            {
+              "value": "parameter_type_designator",
+              "type": "uint8"
+            },
+            {
+              "value": "parameter_change_indicator",
+              "type": "uint8"
+            },
+            {
+              "value": "articulation_attachment_id",
+              "type": "uint16"
+            },
+            {
+              "struct": "paramter_type_varient",
+              "data": [
+                {
+                  "value": "attached_parts",
+                  "type": "uint32"
+                },
+                {
+                  "value": "articulated_parts",
+                  "type": "uint32"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "value": "articulation_parameter_value",
+          "type": "uint64"
+        }
+      ]
+    },
+    {
+      "name": "fire",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 2,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "munition_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "event_id",
+          "type": "uint32"
+        },
+        {
+          "value": "fire_mission_index",
+          "type": "uint16"
+        },
+        {
+          "struct": "entity_location",
+          "data": [
+            {
+              "value": "x",
+              "type": "double"
+            },
+            {
+              "value": "y",
+              "type": "double"
+            },
+            {
+              "value": "z",
+              "type": "double"
+            }
+          ]
+        },
+        {
+          "struct": "entity_orientation",
+          "data": [
+            {
+              "value": "psi",
+              "type": "float"
+            },
+            {
+              "value": "theta",
+              "type": "float"
+            },
+            {
+              "value": "phi",
+              "type": "float"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "detonation",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 3,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "munition_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "event_id",
+          "type": "uint32"
+        },
+        {
+          "struct": "entity_location",
+          "data": [
+            {
+              "value": "x",
+              "type": "double"
+            },
+            {
+              "value": "y",
+              "type": "double"
+            },
+            {
+              "value": "z",
+              "type": "double"
+            }
+          ]
+        },
+        {
+          "struct": "entity_orientation",
+          "data": [
+            {
+              "value": "psi",
+              "type": "float"
+            },
+            {
+              "value": "theta",
+              "type": "float"
+            },
+            {
+              "value": "phi",
+              "type": "float"
+            }
+          ]
+        },
+        {
+          "value": "result_code",
+          "type": "uint16"
+        }
+      ]
+    },
+    {
+      "name": "collision",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 4,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "colliding_entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "contact_velocity",
+          "type": "float"
+        },
+        {
+          "value": "mass",
+          "type": "float"
+        }
+      ]
+    },
+    {
+      "name": "service_request",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 5,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "resupply_offer",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 6,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "resupply_received",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 7,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "resupply_cancel",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 8,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "repair_complete",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 9,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "repair_response",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 10,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "create_entity",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 11,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "remove_entity",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 12,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "start_resume",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 13,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "real_world_time",
+          "data": [
+            {
+              "value": "seconds",
+              "type": "uint32"
+            },
+            {
+              "value": "fraction",
+              "type": "uint32"
+            }
+          ]
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "stop_freeze",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 14,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "real_world_time",
+          "data": [
+            {
+              "value": "seconds",
+              "type": "uint32"
+            },
+            {
+              "value": "fraction",
+              "type": "uint32"
+            }
+          ]
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "acknowledge",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 15,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "acknowledge_flag",
+          "type": "uint16"
+        },
+        {
+          "value": "response_flag",
+          "type": "uint16"
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "action_request",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 16,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        },
+        {
+          "value": "action_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "action_response",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 17,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        },
+        {
+          "value": "action_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "data_query",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 18,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "set_data",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 19,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "data",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 20,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "event_report",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 21,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "comment",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 22,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "emission_electronic_warfare",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 23,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "designator",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 24,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "transmitter",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 25,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "radio_entity",
+          "data": [
+            {
+              "struct": "entity_id",
+              "data": [
+                {
+                  "value": "site",
+                  "type": "uint16"
+                },
+                {
+                  "value": "app",
+                  "type": "uint16"
+                },
+                {
+                  "value": "entity",
+                  "type": "uint16"
+                }
+              ]
+            },
+            {
+              "value": "radio_id",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend radio parameters per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "signal",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 26,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "radio_entity",
+          "data": [
+            {
+              "struct": "entity_id",
+              "data": [
+                {
+                  "value": "site",
+                  "type": "uint16"
+                },
+                {
+                  "value": "app",
+                  "type": "uint16"
+                },
+                {
+                  "value": "entity",
+                  "type": "uint16"
+                }
+              ]
+            },
+            {
+              "value": "radio_id",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend radio parameters per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "receiver",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 27,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "radio_entity",
+          "data": [
+            {
+              "struct": "entity_id",
+              "data": [
+                {
+                  "value": "site",
+                  "type": "uint16"
+                },
+                {
+                  "value": "app",
+                  "type": "uint16"
+                },
+                {
+                  "value": "entity",
+                  "type": "uint16"
+                }
+              ]
+            },
+            {
+              "value": "radio_id",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend radio parameters per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "iff_atc_navaids",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 28,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "underwater_acoustic",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 29,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "supplemental_emission_entity_state",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 30,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "intercom_signal",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 31,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "intercom_control",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 32,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "aggregate_state",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 33,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "is_group_of",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 34,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "transfer_control",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 35,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "is_part_of",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 36,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "minefield_state",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 37,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "minefield_query",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 38,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "minefield_data",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 39,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "minefield_response_nack",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 40,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "environmental_process",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 41,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "gridded_data",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 42,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "point_object_state",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 43,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "linear_object_state",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 44,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "areal_object_state",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 45,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "tspi",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 46,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "appearance",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 47,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "articulated_parts",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 48,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "live_entity_fire",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 49,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "munition_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "event_id",
+          "type": "uint32"
+        },
+        {
+          "value": "fire_mission_index",
+          "type": "uint16"
+        },
+        {
+          "struct": "entity_location",
+          "data": [
+            {
+              "value": "x",
+              "type": "double"
+            },
+            {
+              "value": "y",
+              "type": "double"
+            },
+            {
+              "value": "z",
+              "type": "double"
+            }
+          ]
+        },
+        {
+          "struct": "entity_orientation",
+          "data": [
+            {
+              "value": "psi",
+              "type": "float"
+            },
+            {
+              "value": "theta",
+              "type": "float"
+            },
+            {
+              "value": "phi",
+              "type": "float"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "live_entity_detonation",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 50,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "munition_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "event_id",
+          "type": "uint32"
+        },
+        {
+          "struct": "entity_location",
+          "data": [
+            {
+              "value": "x",
+              "type": "double"
+            },
+            {
+              "value": "y",
+              "type": "double"
+            },
+            {
+              "value": "z",
+              "type": "double"
+            }
+          ]
+        },
+        {
+          "struct": "entity_orientation",
+          "data": [
+            {
+              "value": "psi",
+              "type": "float"
+            },
+            {
+              "value": "theta",
+              "type": "float"
+            },
+            {
+              "value": "phi",
+              "type": "float"
+            }
+          ]
+        },
+        {
+          "value": "result_code",
+          "type": "uint16"
+        }
+      ]
+    },
+    {
+      "name": "create_entity_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 51,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "remove_entity_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 52,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "start_resume_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 53,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "real_world_time",
+          "data": [
+            {
+              "value": "seconds",
+              "type": "uint32"
+            },
+            {
+              "value": "fraction",
+              "type": "uint32"
+            }
+          ]
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "stop_freeze_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 54,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "real_world_time",
+          "data": [
+            {
+              "value": "seconds",
+              "type": "uint32"
+            },
+            {
+              "value": "fraction",
+              "type": "uint32"
+            }
+          ]
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "acknowledge_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 55,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "acknowledge_flag",
+          "type": "uint16"
+        },
+        {
+          "value": "response_flag",
+          "type": "uint16"
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "action_request_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 56,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        },
+        {
+          "value": "action_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "action_response_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 57,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "struct": "entity_id",
+          "data": [
+            {
+              "value": "site",
+              "type": "uint16"
+            },
+            {
+              "value": "app",
+              "type": "uint16"
+            },
+            {
+              "value": "entity",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "request_id",
+          "type": "uint32"
+        },
+        {
+          "value": "action_id",
+          "type": "uint32"
+        }
+      ]
+    },
+    {
+      "name": "data_query_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 58,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "set_data_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 59,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "data_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 60,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    },
+    {
+      "name": "event_report_r",
+      "opcode_field": "pdu_header.pdu_type",
+      "opcode": 61,
+      "data": [
+        {
+          "struct": "pdu_header",
+          "data": [
+            {
+              "value": "protocol_version",
+              "type": "uint8"
+            },
+            {
+              "value": "exercise_id",
+              "type": "uint8"
+            },
+            {
+              "value": "pdu_type",
+              "type": "uint8"
+            },
+            {
+              "value": "protocol_family",
+              "type": "uint8"
+            },
+            {
+              "value": "timestamp",
+              "type": "int32"
+            },
+            {
+              "value": "pdu_length",
+              "type": "uint16"
+            },
+            {
+              "value": "padding",
+              "type": "uint16"
+            }
+          ]
+        },
+        {
+          "value": "_placeholder",
+          "note": "Extend this PDU with fields per DIS spec"
+        }
+      ]
+    }
+  ]
+}
