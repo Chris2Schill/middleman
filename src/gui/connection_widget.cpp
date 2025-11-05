@@ -6,31 +6,36 @@
 #include <QPushButton>
 #include <QFormLayout>
 #include <QHBoxLayout>
-#include <QGroupBox>
 #include <QVBoxLayout>
+#include <QStyle>
+#include <QApplication>
 
 ConnectionWidget::ConnectionWidget(QWidget* parent)
     : QWidget(parent)
 {
-    // Fields
     localHostEdit_  = new QLineEdit(this);
     localPortSpin_  = new QSpinBox(this);
     remoteHostEdit_ = new QLineEdit(this);
     remotePortSpin_ = new QSpinBox(this);
     logStdoutCheck_ = new QCheckBox("Log to stdout", this);
-    startBtn_       = new QPushButton("Start", this);
-    stopBtn_        = new QPushButton("Stop", this);
+    startBtn_       = new QPushButton(this);
+    stopBtn_        = new QPushButton(this);
 
-    // Reasonable defaults
+    // Use standard Qt icons (you can replace with your own QIcon)
+    startBtn_->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    stopBtn_->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+    startBtn_->setToolTip("Start");
+    stopBtn_->setToolTip("Stop");
+
+    // Layouts
     localHostEdit_->setPlaceholderText("127.0.0.1");
     remoteHostEdit_->setPlaceholderText("example.com");
     localPortSpin_->setRange(0, 65535);
     remotePortSpin_->setRange(0, 65535);
     localPortSpin_->setValue(9000);
     remotePortSpin_->setValue(9001);
-    stopBtn_->setEnabled(false); // initially not running
+    stopBtn_->setEnabled(false);
 
-    // Layouts
     auto* form = new QFormLayout;
     form->addRow("Local host:",  localHostEdit_);
     form->addRow("Local port:",  localPortSpin_);
@@ -53,14 +58,12 @@ ConnectionWidget::ConnectionWidget(QWidget* parent)
 }
 
 void ConnectionWidget::wireSignals() {
-    // Start: read current config and invoke callback if set
     connect(startBtn_, &QPushButton::clicked, this, [this](){
         if (running_) return;
         if (onStart) onStart(config());
         setRunning(true);
     });
 
-    // Stop: invoke callback if set
     connect(stopBtn_, &QPushButton::clicked, this, [this](){
         if (!running_) return;
         if (onStop) onStop();
