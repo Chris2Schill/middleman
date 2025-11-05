@@ -1,5 +1,12 @@
 #include "rules_editor_widget.hpp"
 
+#include <QSpinBox>
+#include <QLineEdit>
+#include <QCheckBox>
+#include <QFile>
+#include <QFileInfo>
+#include <QFileDialog>
+
 static inline QToolButton* makeToolButton(const QString& text, const QString& tt) {
     auto* b = new QToolButton;
     b->setText(text);
@@ -39,6 +46,37 @@ RulesEditorWidget::RulesEditorWidget(QWidget *parent)
     connect(delRuleBtn_, &QToolButton::clicked, this, &RulesEditorWidget::onDelRule);
 }
 
+RulesEditorWidget::RulesEditorWidget(const QString& schemaFilePath, QWidget* parent)
+    : RulesEditorWidget(parent)  // delegate to primary ctor to build UI
+{
+    QString err;
+    if (!setSchemaFromFile(schemaFilePath, &err)) {
+        qWarning() << "RulesEditorWidget: failed to load schema from"
+                   << schemaFilePath << ":" << err;
+    }
+}
+
+bool RulesEditorWidget::setSchemaFromFile(const QString& filePath, QString* errorOut) {
+    QFile f(filePath);
+    if (!f.exists()) {
+        if (errorOut) *errorOut = QStringLiteral("File does not exist");
+        return false;
+    }
+    if (!f.open(QIODevice::ReadOnly)) {
+        if (errorOut) *errorOut = QStringLiteral("Unable to open file for reading");
+        return false;
+    }
+
+    const QByteArray data = f.readAll();
+    f.close();
+
+    if (!setSchemaJson(data)) {
+        if (errorOut) *errorOut = QStringLiteral("Invalid JSON or schema format");
+        return false;
+    }
+    return true;
+}
+
 QComboBox* RulesEditorWidget::makeOperatorCombo(const QString& current) {
     static const QStringList ops = {"==", "!=", "<", ">", "<=", ">="};
     auto* c = new QComboBox;
@@ -52,8 +90,8 @@ QComboBox* RulesEditorWidget::makeOperatorCombo(const QString& current) {
 }
 
 void RulesEditorWidget::setupConditionsTable(QTableWidget* t) {
-    t->setColumnCount(3);
-    t->setHorizontalHeaderLabels({"field", "operator", "value"});
+    t->setColumnCount(4);
+    t->setHorizontalHeaderLabels({"field", "operator", "type", "value"});
     t->horizontalHeader()->setStretchLastSection(true);
     t->verticalHeader()->setVisible(false);
     t->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -62,8 +100,8 @@ void RulesEditorWidget::setupConditionsTable(QTableWidget* t) {
 }
 
 void RulesEditorWidget::setupMutationsTable(QTableWidget* t) {
-    t->setColumnCount(2);
-    t->setHorizontalHeaderLabels({"field", "new_value"});
+    t->setColumnCount(3);
+    t->setHorizontalHeaderLabels({"field", "type", "new_value"});
     t->horizontalHeader()->setStretchLastSection(true);
     t->verticalHeader()->setVisible(false);
     t->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -158,16 +196,25 @@ void RulesEditorWidget::addConditionRow(RulePage& rp, const QJsonObject& cond) {
     int row = t->rowCount();
     t->insertRow(row);
 
+    // field
     auto* fieldItem = new QTableWidgetItem(cond.value("field").toString());
     fieldItem->setFlags(fieldItem->flags() | Qt::ItemIsEditable);
     t->setItem(row, 0, fieldItem);
 
+    // operator
     auto* opCombo = makeOperatorCombo(cond.value("operator").toString());
     t->setCellWidget(row, 1, opCombo);
 
-    auto* valItem = new QTableWidgetItem(cond.value("value").toVariant().toString());
-    valItem->setFlags(valItem->flags() | Qt::ItemIsEditable);
-    t->setItem(row, 2, valItem);
+    // type + value
+    QJsonValue v = cond.value("value");
+    ValueType vt = v.isUndefined() || v.isNull()
+                   ? ValueType::String
+                   : inferTypeFromJson(v);
+    auto* typeCombo = makeTypeCombo(vt);
+    t->setCellWidget(row, 2, typeCombo);
+
+    QWidget* editor = createValueEditor(vt, v.isUndefined() ? QJsonValue("") : v);
+    t->setCellWidget(row, 3, editor);
 
     emitCurrentSchemaChanged();
 }
@@ -177,13 +224,21 @@ void RulesEditorWidget::addMutationRow(RulePage& rp, const QJsonObject& mut) {
     int row = t->rowCount();
     t->insertRow(row);
 
+    // field
     auto* fieldItem = new QTableWidgetItem(mut.value("field").toString());
     fieldItem->setFlags(fieldItem->flags() | Qt::ItemIsEditable);
     t->setItem(row, 0, fieldItem);
 
-    auto* valItem = new QTableWidgetItem(mut.value("new_value").toVariant().toString());
-    valItem->setFlags(valItem->flags() | Qt::ItemIsEditable);
-    t->setItem(row, 1, valItem);
+    // type + value
+    QJsonValue v = mut.value("new_value");
+    ValueType vt = v.isUndefined() || v.isNull()
+                   ? ValueType::String
+                   : inferTypeFromJson(v);
+    auto* typeCombo = makeTypeCombo(vt);
+    t->setCellWidget(row, 1, typeCombo);
+
+    QWidget* editor = createValueEditor(vt, v.isUndefined() ? QJsonValue("") : v);
+    t->setCellWidget(row, 2, editor);
 
     emitCurrentSchemaChanged();
 }
@@ -215,18 +270,15 @@ void RulesEditorWidget::onDelRule() {
 QJsonObject RulesEditorWidget::readConditionRow(const QTableWidget* t, int row) {
     QJsonObject cond;
     auto* fieldItem = t->item(row, 0);
-    auto* valItem   = t->item(row, 2);
     auto* opCombo   = qobject_cast<QComboBox*>(t->cellWidget(row, 1));
+    auto* typeCombo = qobject_cast<QComboBox*>(t->cellWidget(row, 2));
+    QWidget* editor = t->cellWidget(row, 3);
 
     cond["field"] = fieldItem ? fieldItem->text() : "";
     cond["operator"] = opCombo ? opCombo->currentText() : "==";
 
-    // Try to coerce to number if it looks like one
-    QString v = valItem ? valItem->text() : "";
-    bool okInt = false;
-    qlonglong asInt = v.toLongLong(&okInt);
-    if (okInt) cond["value"] = static_cast<double>(asInt);
-    else cond["value"] = v;
+    ValueType vt = typeCombo ? static_cast<ValueType>(typeCombo->currentIndex()) : ValueType::String;
+    cond["value"] = readValueFromEditor(editor, vt);
 
     return cond;
 }
@@ -234,15 +286,13 @@ QJsonObject RulesEditorWidget::readConditionRow(const QTableWidget* t, int row) 
 QJsonObject RulesEditorWidget::readMutationRow(const QTableWidget* t, int row) {
     QJsonObject mut;
     auto* fieldItem = t->item(row, 0);
-    auto* valItem   = t->item(row, 1);
+    auto* typeCombo = qobject_cast<QComboBox*>(t->cellWidget(row, 1));
+    QWidget* editor = t->cellWidget(row, 2);
 
     mut["field"] = fieldItem ? fieldItem->text() : "";
 
-    QString v = valItem ? valItem->text() : "";
-    bool okInt = false;
-    qlonglong asInt = v.toLongLong(&okInt);
-    if (okInt) mut["new_value"] = static_cast<double>(asInt);
-    else mut["new_value"] = v;
+    ValueType vt = typeCombo ? static_cast<ValueType>(typeCombo->currentIndex()) : ValueType::String;
+    mut["new_value"] = readValueFromEditor(editor, vt);
 
     return mut;
 }
@@ -266,44 +316,46 @@ QJsonObject RulesEditorWidget::readRuleFrom(const RulePage& rp) {
 void RulesEditorWidget::writeConditionTo(const QJsonObject& cond, QTableWidget* t, int row) {
     if (row == t->rowCount()) t->insertRow(row);
 
+    // field
     auto* fieldItem = new QTableWidgetItem(cond.value("field").toString());
     fieldItem->setFlags(fieldItem->flags() | Qt::ItemIsEditable);
     t->setItem(row, 0, fieldItem);
 
+    // operator
     auto* opCombo = new QComboBox;
     opCombo->addItems({"==", "!=", "<", ">", "<=", ">="});
     opCombo->setCurrentText(cond.value("operator").toString("=="));
     t->setCellWidget(row, 1, opCombo);
-
-    QString v;
-    auto val = cond.value("value");
-    if (val.isDouble()) v = QString::number(val.toDouble());
-    else v = val.toVariant().toString();
-
-    auto* valItem = new QTableWidgetItem(v);
-    valItem->setFlags(valItem->flags() | Qt::ItemIsEditable);
-    t->setItem(row, 2, valItem);
-
-    // react to operator changes
     connect(opCombo, &QComboBox::currentTextChanged, this, [this](const QString&){ emitCurrentSchemaChanged(); });
+
+    // type + value
+    QJsonValue v = cond.value("value");
+    ValueType vt = inferTypeFromJson(v);
+    auto* typeCombo = makeTypeCombo(vt);
+    t->setCellWidget(row, 2, typeCombo);
+
+    QWidget* editor = createValueEditor(vt, v);
+    t->setCellWidget(row, 3, editor);
 }
 
 void RulesEditorWidget::writeMutationTo(const QJsonObject& mut, QTableWidget* t, int row) {
     if (row == t->rowCount()) t->insertRow(row);
 
+    // field
     auto* fieldItem = new QTableWidgetItem(mut.value("field").toString());
     fieldItem->setFlags(fieldItem->flags() | Qt::ItemIsEditable);
     t->setItem(row, 0, fieldItem);
 
-    QString v;
-    auto val = mut.value("new_value");
-    if (val.isDouble()) v = QString::number(val.toDouble());
-    else v = val.toVariant().toString();
+    // type + value
+    QJsonValue v = mut.value("new_value");
+    ValueType vt = inferTypeFromJson(v);
+    auto* typeCombo = makeTypeCombo(vt);
+    t->setCellWidget(row, 1, typeCombo);
 
-    auto* valItem = new QTableWidgetItem(v);
-    valItem->setFlags(valItem->flags() | Qt::ItemIsEditable);
-    t->setItem(row, 1, valItem);
+    QWidget* editor = createValueEditor(vt, v);
+    t->setCellWidget(row, 2, editor);
 }
+
 
 void RulesEditorWidget::writeRuleTo(const QJsonObject& rule, RulePage& rp) {
     rp.conditions->setRowCount(0);
@@ -386,5 +438,155 @@ QByteArray RulesEditorWidget::schemaJson(bool pretty) {
 
 void RulesEditorWidget::emitCurrentSchemaChanged() {
     emit schemaChanged(schemaJson(true));
+}
+
+RulesEditorWidget::ValueType RulesEditorWidget::inferTypeFromJson(const QJsonValue& v) {
+    if (v.isBool()) return ValueType::Bool;
+    if (v.isDouble()) {
+        const double d = v.toDouble();
+        const double i = std::llround(d);
+        return (std::fabs(d - i) < 1e-9) ? ValueType::Int : ValueType::Double;
+    }
+    // strings or null -> decide by text later; default to string
+    return ValueType::String;
+}
+
+RulesEditorWidget::ValueType RulesEditorWidget::inferTypeFromText(const QString& s) {
+    if (s.compare("true", Qt::CaseInsensitive) == 0 ||
+        s.compare("false", Qt::CaseInsensitive) == 0)
+        return ValueType::Bool;
+
+    bool okInt=false; s.toLongLong(&okInt);
+    if (okInt) return ValueType::Int;
+
+    bool okD=false; s.toDouble(&okD);
+    if (okD) return ValueType::Double;
+
+    return ValueType::String;
+}
+
+QComboBox* RulesEditorWidget::makeTypeCombo(ValueType initial) {
+    auto* cb = new QComboBox;
+    cb->addItems({"int", "double", "bool", "string"});
+    cb->setCurrentIndex(static_cast<int>(initial));
+    connect(cb, qOverload<int>(&QComboBox::currentIndexChanged), this, [this, cb](int){
+        // when type changes, rebuild the value editor in the same row
+        auto* t = qobject_cast<QTableWidget*>(cb->parentWidget()->parentWidget());
+        if (!t) return;
+        int row = t->indexAt(cb->parentWidget()->pos()).row();
+        if (row < 0) return;
+
+        const bool isCond = (t->columnCount() == 4);
+        int valueCol = isCond ? 3 : 2;
+
+        // grab current text to preserve if possible
+        QWidget* oldEditor = t->cellWidget(row, valueCol);
+        QString existingText;
+        if (auto* le = qobject_cast<QLineEdit*>(oldEditor)) existingText = le->text();
+        else if (auto* sb = qobject_cast<QSpinBox*>(oldEditor)) existingText = QString::number(sb->value());
+        else if (auto* dsb = qobject_cast<QDoubleSpinBox*>(oldEditor)) existingText = QString::number(dsb->value());
+        else if (auto* chk = qobject_cast<QCheckBox*>(oldEditor)) existingText = chk->isChecked() ? "true" : "false";
+        else if (auto* itm = t->item(row, valueCol)) existingText = itm->text();
+
+        ValueType vt = static_cast<ValueType>(cb->currentIndex());
+        QJsonValue init;
+        switch (vt) {
+            case ValueType::Bool:   init = (existingText.compare("true", Qt::CaseInsensitive)==0); break;
+            case ValueType::Int:    init = existingText.toLongLong(); break;
+            case ValueType::Double: init = existingText.toDouble(); break;
+            case ValueType::String: init = existingText; break;
+        }
+
+        QWidget* editor = createValueEditor(vt, init);
+        t->setCellWidget(row, valueCol, editor);
+        if (t->item(row, valueCol)) { delete t->item(row, valueCol); t->setItem(row, valueCol, nullptr); }
+        emitCurrentSchemaChanged();
+    });
+    return cb;
+}
+
+QWidget* RulesEditorWidget::createValueEditor(ValueType type, const QJsonValue& initial) {
+    switch (type) {
+        case ValueType::Int: {
+            auto* sb = new QSpinBox;
+            sb->setMinimum(std::numeric_limits<int>::min());
+            sb->setMaximum(std::numeric_limits<int>::max());
+            sb->setValue(initial.isDouble() ? static_cast<int>(std::llround(initial.toDouble()))
+                                            : initial.toVariant().toInt());
+            installEditorSignals(sb);
+            return sb;
+        }
+        case ValueType::Double: {
+            auto* dsb = new QDoubleSpinBox;
+            dsb->setDecimals(6);
+            dsb->setMinimum(std::numeric_limits<double>::lowest()/2);
+            dsb->setMaximum(std::numeric_limits<double>::max()/2);
+            dsb->setValue(initial.toDouble());
+            installEditorSignals(dsb);
+            return dsb;
+        }
+        case ValueType::Bool: {
+            auto* chk = new QCheckBox;
+            chk->setChecked(initial.toBool());
+            // center it
+            auto* w = new QWidget;
+            auto* l = new QHBoxLayout(w);
+            l->setContentsMargins(0,0,0,0);
+            l->addStretch();
+            l->addWidget(chk);
+            l->addStretch();
+            installEditorSignals(chk);
+            return w; // return wrapper; we'll special-case reading
+        }
+        case ValueType::String:
+        default: {
+            auto* le = new QLineEdit;
+            le->setText(initial.isString() ? initial.toString()
+                                           : initial.toVariant().toString());
+            installEditorSignals(le);
+            return le;
+        }
+    }
+}
+
+QJsonValue RulesEditorWidget::readValueFromEditor(QWidget* editor, ValueType type) const {
+    // bool editor is wrapped in a QWidget with QCheckBox child
+    if (type == ValueType::Bool) {
+        QCheckBox* chk = editor->findChild<QCheckBox*>();
+        return chk ? QJsonValue(chk->isChecked()) : QJsonValue(false);
+    }
+    if (auto* sb = qobject_cast<QSpinBox*>(editor)) return QJsonValue(sb->value());
+    if (auto* dsb = qobject_cast<QDoubleSpinBox*>(editor)) return QJsonValue(dsb->value());
+    if (auto* le = qobject_cast<QLineEdit*>(editor)) return QJsonValue(le->text());
+    // Fallback: if it's an item cell (shouldn't happen after upgrade)
+    return QJsonValue();
+}
+
+void RulesEditorWidget::installEditorSignals(QWidget* editor) {
+    if (auto* le = qobject_cast<QLineEdit*>(editor))
+        connect(le, &QLineEdit::textChanged, this, [this](const QString&){ emitCurrentSchemaChanged(); });
+    if (auto* sb = qobject_cast<QSpinBox*>(editor))
+        connect(sb, qOverload<int>(&QSpinBox::valueChanged), this, [this](int){ emitCurrentSchemaChanged(); });
+    if (auto* dsb = qobject_cast<QDoubleSpinBox*>(editor))
+        connect(dsb, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double){ emitCurrentSchemaChanged(); });
+    if (auto* chk = qobject_cast<QCheckBox*>(editor))
+        connect(chk, &QCheckBox::stateChanged, this, [this](int){ emitCurrentSchemaChanged(); });
+}
+
+bool RulesEditorWidget::loadSchemaFromDialog() {
+    const QString path = QFileDialog::getOpenFileName(
+        this,
+        tr("Open Rules Schema"),
+        QString(),
+        tr("JSON files (*.json);;All files (*)")
+    );
+    if (path.isEmpty()) return false;
+
+    QString err;
+    const bool ok = setSchemaFromFile(path, &err);
+    if (!ok) {
+        qWarning() << "RulesEditorWidget: could not load schema from dialog:" << err;
+    }
+    return ok;
 }
 

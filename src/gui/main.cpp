@@ -93,7 +93,7 @@ public:
         QTabWidget* tabWidget = new QTabWidget;
         SchemaEditor* schemaEditor = new SchemaEditor("dis_pdus_scaffold.json");
         ConnectionWidget* connectionEditor = new ConnectionWidget;
-        RulesEditorWidget* rulesEditor = new RulesEditorWidget;
+        RulesEditorWidget* rulesEditor = new RulesEditorWidget("test_rules2.json");
 
         QWidget* configurationSection = new QWidget;
         QGridLayout* configurationSectionLayout = new QGridLayout;
