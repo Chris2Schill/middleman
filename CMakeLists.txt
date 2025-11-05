@@ -25,3 +25,5 @@ configure_file(config/dis_types.json ${CMAKE_BINARY_DIR}/src/gui)
 configure_file(config/test_rules.json ${CMAKE_BINARY_DIR}/src/gui)
 configure_file(config/test_rules2.json ${CMAKE_BINARY_DIR}/src/gui)
 configure_file(config/dis_pdus_scaffold.json ${CMAKE_BINARY_DIR}/src/gui)
+
+include(CPack)
