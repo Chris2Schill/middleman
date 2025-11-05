@@ -57,23 +57,18 @@ public:
         src_ep  = {boost::asio::ip::make_address(cfg.local_host), cfg.local_port};
         sink_ep = {boost::asio::ip::make_address(cfg.remote_host), cfg.remote_port};
 
+        bool reuse = true;
+        auto rc = socket->startListening(src_ep, reuse);
+        if (rc != UDPTransport::SUCCESS) {
+            spdlog::error("Failed to start middleman proxy socket: errcode {}", (int)rc);
+            exit(-1);
+        }
         if (!cfg.multicast_group.empty()) {
-            bool reuse = true;
-            auto rc = socket->startListeningMulticast(src_ep, cfg.multicast_group, reuse);
-            if (rc != UDPTransport::SUCCESS) {
-                spdlog::error("Failed to start middleman proxy socket: errcode {}", (int)rc);
-                exit(-1);
-            }
+            socket->setMulticastOutboundInterface(cfg.local_host);
+            bool loopback = false;
+            socket->joinGroup(cfg.multicast_group, loopback);
+            socket->setTTL(64);
         }
-        else {
-            bool reuse = true;
-            auto rc = socket->startListening(src_ep, reuse);
-            if (rc != UDPTransport::SUCCESS) {
-                spdlog::error("Failed to start middleman proxy socket: errcode {}", (int)rc);
-                exit(-1);
-            }
-        }
-
     }
 
     void recv_callback(mm::network::UDPTransportPtr socket,
