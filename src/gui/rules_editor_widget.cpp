@@ -21,8 +21,8 @@ RulesEditorWidget::RulesEditorWidget(QWidget *parent)
     : QWidget(parent)
 {
     auto* root = new QVBoxLayout(this);
-    root->setContentsMargins(2,2,2,2);
-    root->setSpacing(2);
+    root->setContentsMargins(0,0,0,0);
+    root->setSpacing(0);
 
     // Create a compact top bar placed inside the tab widget header
     auto* topBarWidget = new QWidget(this);
@@ -43,7 +43,7 @@ RulesEditorWidget::RulesEditorWidget(QWidget *parent)
     topBar->addWidget(delRuleBtn_);
 
     // small padding so buttons don't crowd tab text
-    topBar->addSpacing(6);
+    // topBar->addSpacing(6);
 
     // No stretch — the buttons belong *inline* with the tab bar
     tabs_ = new QTabWidget(this);
@@ -142,19 +142,16 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     rp.page = new QWidget;
     auto* v = new QVBoxLayout(rp.page);
     v->setContentsMargins(0,0,0,0);
-    v->setSpacing(10);
+    v->setSpacing(0);
 
     auto* splitter = new QSplitter(Qt::Vertical, rp.page);
 
     /* --- Conditions card --- */
-    auto* condCard = new QFrame;
-    condCard->setProperty("card", true);
-    auto* condWrap = new QWidget(condCard);
-    auto* condCardLayout = new QVBoxLayout(condCard);
-    condCardLayout->setContentsMargins(0,0,0,0);
-    condCardLayout->addWidget(condWrap);
-
+    auto* condWrap = new QWidget;
     auto* condLayout = new QVBoxLayout(condWrap);
+    condLayout->setContentsMargins(0,0,0,0);
+    condLayout->setSpacing(0);
+
     auto* condBar = new QHBoxLayout;
     auto* condLbl = new QLabel("Conditions");
     condLbl->setProperty("role", "title");
@@ -167,19 +164,17 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     condLayout->addLayout(condBar);
 
     rp.conditions = new QTableWidget;
+    rp.conditions->setObjectName("conditionsTable");
     setupConditionsTable(rp.conditions);
     polishTable(rp.conditions);
     condLayout->addWidget(rp.conditions);
 
     /* --- Mutations card --- */
-    auto* mutCard = new QFrame;
-    mutCard->setProperty("card", true);
-    auto* mutWrap = new QWidget(mutCard);
-    auto* mutCardLayout = new QVBoxLayout(mutCard);
-    mutCardLayout->setContentsMargins(0,0,0,0);
-    mutCardLayout->addWidget(mutWrap);
-
+    auto* mutWrap = new QWidget;
     auto* mutLayout = new QVBoxLayout(mutWrap);
+    mutLayout->setContentsMargins(0,0,0,0);
+    mutLayout->setSpacing(0);
+
     auto* mutBar = new QHBoxLayout;
     auto* mutLbl = new QLabel("Mutations");
     mutLbl->setProperty("role", "title");
@@ -192,16 +187,18 @@ RulesEditorWidget::RulePage RulesEditorWidget::createRulePage() {
     mutLayout->addLayout(mutBar);
 
     rp.mutations = new QTableWidget;
+    rp.mutations->setObjectName("mutationsTable");
     setupMutationsTable(rp.mutations);
     polishTable(rp.mutations);
     mutLayout->addWidget(rp.mutations);
 
     /* --- Splitter --- */
-    splitter->addWidget(condCard);
-    splitter->addWidget(mutCard);
+    splitter->addWidget(condWrap);
+    splitter->addWidget(mutWrap);
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 1);
     splitter->setHandleWidth(2);
+    splitter->setContentsMargins(0,0,0,0);
 
     v->addWidget(splitter);
 
@@ -258,7 +255,7 @@ void RulesEditorWidget::addConditionRow(RulePage& rp, const QJsonObject& cond) {
     ValueType vt = v.isUndefined() || v.isNull()
                    ? ValueType::String
                    : inferTypeFromJson(v);
-    auto* typeCombo = makeTypeCombo(vt);
+    auto* typeCombo = makeTypeCombo(vt, t, 2, 3);
     t->setCellWidget(row, 2, typeCombo);
 
     QWidget* editor = createValueEditor(vt, v.isUndefined() ? QJsonValue("") : v);
@@ -282,7 +279,7 @@ void RulesEditorWidget::addMutationRow(RulePage& rp, const QJsonObject& mut) {
     ValueType vt = v.isUndefined() || v.isNull()
                    ? ValueType::String
                    : inferTypeFromJson(v);
-    auto* typeCombo = makeTypeCombo(vt);
+    auto* typeCombo = makeTypeCombo(vt, t, 1, 2);
     t->setCellWidget(row, 1, typeCombo);
 
     QWidget* editor = createValueEditor(vt, v.isUndefined() ? QJsonValue("") : v);
@@ -379,7 +376,7 @@ void RulesEditorWidget::writeConditionTo(const QJsonObject& cond, QTableWidget* 
     // type + value
     QJsonValue v = cond.value("value");
     ValueType vt = inferTypeFromJson(v);
-    auto* typeCombo = makeTypeCombo(vt);
+    auto* typeCombo = makeTypeCombo(vt, t, 2, 3);
     t->setCellWidget(row, 2, typeCombo);
 
     QWidget* editor = createValueEditor(vt, v);
@@ -397,7 +394,7 @@ void RulesEditorWidget::writeMutationTo(const QJsonObject& mut, QTableWidget* t,
     // type + value
     QJsonValue v = mut.value("new_value");
     ValueType vt = inferTypeFromJson(v);
-    auto* typeCombo = makeTypeCombo(vt);
+    auto* typeCombo = makeTypeCombo(vt, t, 1, 2);
     t->setCellWidget(row, 1, typeCombo);
 
     QWidget* editor = createValueEditor(vt, v);
@@ -506,29 +503,41 @@ RulesEditorWidget::ValueType RulesEditorWidget::inferTypeFromText(const QString&
     return ValueType::String;
 }
 
-QComboBox* RulesEditorWidget::makeTypeCombo(ValueType initial) {
-    auto* cb = new QComboBox;
+QComboBox* RulesEditorWidget::makeTypeCombo(ValueType initial,
+                                            QTableWidget* table,
+                                            int typeCol,
+                                            int valueCol)
+{
+    auto* cb = new QComboBox(table);           // parent = table is important
     cb->addItems({"int", "double", "bool", "string"});
     cb->setCurrentIndex(static_cast<int>(initial));
-    connect(cb, qOverload<int>(&QComboBox::currentIndexChanged), this, [this, cb](int){
-        // when type changes, rebuild the value editor in the same row
-        auto* t = qobject_cast<QTableWidget*>(cb->parentWidget()->parentWidget());
-        if (!t) return;
-        int row = t->indexAt(cb->parentWidget()->pos()).row();
+
+    // store columns for reuse
+    cb->setProperty("typeCol", typeCol);
+    cb->setProperty("valueCol", valueCol);
+
+    connect(cb, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            [this, table, cb](int){
+        const int typeCol = cb->property("typeCol").toInt();
+        const int valueCol = cb->property("valueCol").toInt();
+
+        // Find the row of this combo (map a point inside the combo to the viewport)
+        QPoint center = cb->rect().center();
+        QPoint vpPos  = cb->mapTo(table->viewport(), center);
+        int row = table->indexAt(vpPos).row();
         if (row < 0) return;
 
-        const bool isCond = (t->columnCount() == 4);
-        int valueCol = isCond ? 3 : 2;
-
-        // grab current text to preserve if possible
-        QWidget* oldEditor = t->cellWidget(row, valueCol);
+        // Preserve existing value (read from current editor/widget)
         QString existingText;
+        QWidget* oldEditor = table->cellWidget(row, valueCol);
         if (auto* le = qobject_cast<QLineEdit*>(oldEditor)) existingText = le->text();
         else if (auto* sb = qobject_cast<QSpinBox*>(oldEditor)) existingText = QString::number(sb->value());
         else if (auto* dsb = qobject_cast<QDoubleSpinBox*>(oldEditor)) existingText = QString::number(dsb->value());
-        else if (auto* chk = qobject_cast<QCheckBox*>(oldEditor)) existingText = chk->isChecked() ? "true" : "false";
-        else if (auto* itm = t->item(row, valueCol)) existingText = itm->text();
+        else if (auto* chk = oldEditor ? oldEditor->findChild<QCheckBox*>() : nullptr)
+            existingText = chk->isChecked() ? "true" : "false";
+        else if (auto* item = table->item(row, valueCol)) existingText = item->text();
 
+        // Build new editor based on new type
         ValueType vt = static_cast<ValueType>(cb->currentIndex());
         QJsonValue init;
         switch (vt) {
@@ -539,10 +548,12 @@ QComboBox* RulesEditorWidget::makeTypeCombo(ValueType initial) {
         }
 
         QWidget* editor = createValueEditor(vt, init);
-        t->setCellWidget(row, valueCol, editor);
-        if (t->item(row, valueCol)) { delete t->item(row, valueCol); t->setItem(row, valueCol, nullptr); }
+        table->setCellWidget(row, valueCol, editor);
+        if (table->item(row, valueCol)) { delete table->item(row, valueCol); table->setItem(row, valueCol, nullptr); }
+
         emitCurrentSchemaChanged();
     });
+
     return cb;
 }
 
@@ -753,7 +764,7 @@ void RulesEditorWidget::polishTable(QTableWidget* t) {
 
     // zero padding around the view
     t->setStyleSheet(R"CSS(
-        QTableView { margin: 0px; padding: 0px; }
+        QTableView { margin: 0px; padding: 0px; border: none; }
     )CSS");
 }
 

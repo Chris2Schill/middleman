@@ -60,7 +60,7 @@ private:
 
     // UI helpers
     QComboBox*  makeOperatorCombo(const QString& current = QString());
-    QComboBox*  makeTypeCombo(ValueType initial);
+    QComboBox*  makeTypeCombo(ValueType initial, QTableWidget* table, int typeCol, int valueCol);
     void        setupConditionsTable(QTableWidget* t);
     void        setupMutationsTable(QTableWidget* t);
     RulePage    createRulePage();
