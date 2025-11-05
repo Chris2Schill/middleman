@@ -1,6 +1,5 @@
 #include <mm/mutators/json_rule_based_mutator.hpp>
 #include <mm/config_reader.hpp>
-#include <byteswap.h>
 
 static void swap_bytes(void *object, size_t size)
 {
