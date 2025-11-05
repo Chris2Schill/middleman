@@ -33,6 +33,7 @@ public:
     // Convenience: set the running state (updates buttons/enables)
     void setRunning(bool running);
     bool isRunning() const { return running_; }
+    bool logStdoutChecked();
 
 private:
     // UI elements

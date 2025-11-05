@@ -63,6 +63,7 @@ public:
         ui.connectionEditor->setConfig(defaultConn);
 
         ui.connectionEditor->onStart = [this](const ConnectionConfig& c) {
+
             auto rulesJsonStr = ui.rulesEditor->schemaJson().toStdString();
 
             bool to_big_endian = true;
@@ -72,6 +73,7 @@ public:
                 .remote_host = c.remoteHost.toStdString(),
                 .remote_port = (unsigned short)c.remotePort,
                 .mutator = mm::mutators::json_rule_based_mutator::fromJsonString("dis_pdus_scaffold.json", rulesJsonStr, to_big_endian),
+                .log_to_stdout = ui.connectionEditor->logStdoutChecked(),
             };
 
             proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);

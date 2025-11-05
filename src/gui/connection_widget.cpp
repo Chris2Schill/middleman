@@ -138,3 +138,7 @@ void ConnectionWidget::updateButtons() {
     stopBtn_->setEnabled(running_);
 }
 
+bool ConnectionWidget::logStdoutChecked() {
+    return logStdoutCheck_->isChecked();
+}
+
