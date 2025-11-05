@@ -27,7 +27,9 @@ json_rule_based_mutator::json_rule_based_mutator(const std::string& typesfile, c
 
     spdlog::info("Parsing types file: " + typesfile);
     packet_types_list = packet_description_from_json(read_configuration(typesfile));
-    spdlog::info(packet_types_list[0].dump());
+    for (auto& ptl : packet_types_list) {
+        spdlog::info(ptl.dump());
+    }
 
     if (!rulefile.empty()) {
         spdlog::info("Parsing rules file: " + rulefile);
