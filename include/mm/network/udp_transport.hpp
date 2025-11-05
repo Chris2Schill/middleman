@@ -244,7 +244,7 @@ inline void UDPTransport::setTTL(int hops) {
 
 inline void UDPTransport::setMulticastOutboundInterface(const std::string& ip) {
     boost::asio::ip::address outbound = boost::asio::ip::address::from_string(ip);
-    socket->set_option(boost::asio::ip::multicast::outbound_interface(outbound));
+    socket->set_option(boost::asio::ip::multicast::outbound_interface(outbound.to_v4()));
 }
 
 inline void UDPTransport::joinGroup(std::string groupIp, bool loopback) {
@@ -252,7 +252,7 @@ inline void UDPTransport::joinGroup(std::string groupIp, bool loopback) {
     boost::system::error_code ec;
     socket->set_option(boost::asio::ip::multicast::join_group(multicastAddress.to_v4()), ec);
     if (ec) {
-        spdlog::error("Failed to join multicast group {}", groupId);
+        spdlog::error("Failed to join multicast group {}", groupIp);
     }
     socket->set_option(boost::asio::ip::multicast::enable_loopback(loopback), ec);
     if (ec) {
