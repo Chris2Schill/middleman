@@ -20,6 +20,7 @@
 #include <mm/mutators/test_mutator.hpp>
 #include <mm/mutators/json_rule_based_mutator.hpp>
 #include <mm/config_reader.hpp>
+#include "schema_editor.hpp"
 
 
 class AsioThread : public QThread {
@@ -90,7 +91,7 @@ public:
         });
 
         layout->addWidget(ui.tabWidget);
-        ui.tabWidget->addTab(ui.packetTab, "Packets");
+        ui.tabWidget->addTab(ui.schemaEditor, "Packets");
 
         asio_thread = std::thread([this](){
                 boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard(boost::asio::make_work_guard(asio_ctx));
@@ -109,7 +110,7 @@ public:
 
     struct ui_container {
         QTabWidget* tabWidget = new QTabWidget;
-        QWidget* packetTab = new QWidget;
+        SchemaEditor* schemaEditor = new SchemaEditor;
 
         QWidget* configurationSection = new QWidget;
         QGridLayout* configurationSectionLayout = new QGridLayout;
@@ -120,7 +121,6 @@ public:
         QCheckBox* logToStdoutCheckbox = new QCheckBox;
 
         QPushButton* startButton = new QPushButton("Start");
-
     }ui;
 
 

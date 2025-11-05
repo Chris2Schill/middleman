@@ -25,8 +25,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 
-# add_executable(mmgui main.cpp)
-add_executable(mmgui gpt.cpp)
+add_executable(mmgui main.cpp)
+# add_executable(mmgui gpt.cpp)
 target_link_libraries(mmgui PRIVATE Qt6::Widgets spdlog::spdlog mmcore)
 target_include_directories(mmgui PRIVATE .)
 set_target_properties(mmgui PROPERTIES

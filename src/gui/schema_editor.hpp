@@ -512,13 +512,13 @@ private:
     }
 };
 
-// ------------------------------ main() ---------------------------------
-int main(int argc, char** argv) {
-    QApplication app(argc, argv);
-    SchemaEditor w; w.show();
-    return app.exec();
-}
-
+// // ------------------------------ main() ---------------------------------
+// int main(int argc, char** argv) {
+//     QApplication app(argc, argv);
+//     SchemaEditor w; w.show();
+//     return app.exec();
+// }
+//
 // --------------------------- CMakeLists.txt ----------------------------
 // Save the following as CMakeLists.txt next to main.cpp
 /*
