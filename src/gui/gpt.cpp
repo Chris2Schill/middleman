@@ -211,8 +211,10 @@ public:
                           const QModelIndex& index) const override {
         Q_UNUSED(option);
         if (index.column() != 3) return nullptr; // Value column only
-        const auto nodeType = index.data(Roles::NodeType).toString();
-        const auto typeName = index.data(Roles::TypeName).toString();
+        // IMPORTANT: roles are stored on column 0; read them from the sibling
+        const QModelIndex metaIdx = index.sibling(index.row(), 0);
+        const auto nodeType = metaIdx.data(Roles::NodeType).toString();
+        const auto typeName = metaIdx.data(Roles::TypeName).toString();
         if (INT_LIMITS.contains(typeName)) {
             auto* le = new QLineEdit(parent);
             const auto lim = INT_LIMITS.value(typeName);
@@ -235,6 +237,15 @@ public:
             return le;
         }
         return nullptr; // structs are not directly editable
+    }
+
+    void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override {
+        // Ensure we commit text into the Value column
+        if (auto* le = qobject_cast<QLineEdit*>(editor)) {
+            model->setData(index, le->text());
+        } else {
+            QStyledItemDelegate::setModelData(editor, model, index);
+        }
     }
 };
 
