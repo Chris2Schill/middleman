@@ -27,6 +27,7 @@ set(CMAKE_AUTOUIC ON)
 set(SOURCES
     main.cpp
     connection_widget.cpp
+    rules_editor_widget.cpp
 )
 
 add_executable(mmgui ${SOURCES})

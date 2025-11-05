@@ -20,6 +20,7 @@
 #include <mm/mutators/test_mutator.hpp>
 #include <mm/mutators/json_rule_based_mutator.hpp>
 #include <mm/config_reader.hpp>
+#include "rules_editor_widget.hpp"
 #include "schema_editor.hpp"
 #include "connection_widget.hpp"
 
@@ -49,7 +50,7 @@ public:
 
         layout->setContentsMargins(0,0,0,0);
 
-        layout->addWidget(ui.connectionWidget);
+        layout->addWidget(ui.connectionEditor);
 
         // // Default config
         ConnectionConfig defaultConn = {
@@ -59,9 +60,9 @@ public:
             .remotePort = 3000,
             .logToStdout = true,
         };
-        ui.connectionWidget->setConfig(defaultConn);
+        ui.connectionEditor->setConfig(defaultConn);
 
-        ui.connectionWidget->onStart = [this](const ConnectionConfig& c) {
+        ui.connectionEditor->onStart = [this](const ConnectionConfig& c) {
             bool to_big_endian = true;
             mm::network::middleman_proxy::settings settings = {
                 .local_host  = c.localHost.toStdString(),
@@ -74,12 +75,13 @@ public:
 
             proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);
         };
-        ui.connectionWidget->onStop = [this]() {
+        ui.connectionEditor->onStop = [this]() {
             proxy_server = nullptr;
         };
 
         layout->addWidget(ui.tabWidget);
         ui.tabWidget->addTab(ui.schemaEditor, "Packets");
+        ui.tabWidget->addTab(ui.rulesEditor, "Rules");
 
         asio_thread = std::thread([this](){
                 boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard(boost::asio::make_work_guard(asio_ctx));
@@ -90,7 +92,8 @@ public:
     struct ui_container {
         QTabWidget* tabWidget = new QTabWidget;
         SchemaEditor* schemaEditor = new SchemaEditor("dis_pdus_scaffold.json");
-        ConnectionWidget* connectionWidget = new ConnectionWidget;
+        ConnectionWidget* connectionEditor = new ConnectionWidget;
+        RulesEditorWidget* rulesEditor = new RulesEditorWidget;
 
         QWidget* configurationSection = new QWidget;
         QGridLayout* configurationSectionLayout = new QGridLayout;
