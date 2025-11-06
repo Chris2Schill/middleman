@@ -29,6 +29,7 @@ set(SOURCES
     connection_widget.cpp
     rules_editor_widget.cpp
     udp_viewer_widget.cpp
+    schema_editor.cpp
 )
 
 add_executable(mmgui ${SOURCES})
