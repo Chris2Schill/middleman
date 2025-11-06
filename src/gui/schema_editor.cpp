@@ -477,15 +477,32 @@ bool SchemaEditor::saveValuesForKeyToFile(const QString& key) const {
     const QString fn = QFileDialog::getSaveFileName(nullptr, "Save Values (current packet)", key + ".values.json", "JSON (*.json)");
     if (fn.isEmpty()) return false;
 
+    // Values map
     const auto it = storedValues.find(key);
-    QJsonObject obj;
-    if (it != storedValues.end()) {
-        for (auto mIt = it.value().begin(); mIt != it.value().end(); ++mIt)
-            obj.insert(mIt.key(), mIt.value());
+    const QHash<QString, QString> map = (it != storedValues.end()) ? it.value() : QHash<QString, QString>{};
+
+    // Decide order
+    QStringList order;
+    const QString curKey = packetKey(currentPacket);
+    if (!currentPacket.isEmpty() && key == curKey && tree && tree->topLevelItemCount() > 0) {
+        // Exact visual order from the tree for the current packet
+        order = currentPacketTreeOrder();
+    } else {
+        // Fallback: schema order if you have it; else just whatever keys exist
+        if (auto pkt = findPacketByKey(key); !pkt.isEmpty()) {
+            order = orderedFieldPaths(pkt);
+        } else {
+            order = map.keys(); // as a last resort
+        }
     }
 
+    // Build JSON in that order
+    QJsonObject obj;
+    for (const auto& path : order)
+        obj.insert(path, map.value(path, QStringLiteral("0")));
+
     QFile f(fn);
-    if (!f.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QMessageBox::warning(nullptr, "Save Values", f.errorString());
         return false;
     }
@@ -544,3 +561,67 @@ bool SchemaEditor::saveAllValuesToFile() const {
     f.close();
     return true;
 }
+
+// Put near your other helpers in schema_editor.cpp
+QStringList SchemaEditor::currentPacketTreeOrder() const {
+    QStringList order;
+    if (!tree || tree->topLevelItemCount() == 0) return order;
+    auto* root = tree->topLevelItem(0);
+
+    std::function<void(QTreeWidgetItem*)> walk = [&](QTreeWidgetItem* it){
+        for (int i = 0; i < it->childCount(); ++i) {
+            auto* c = it->child(i);
+            if (c->text(1) == QLatin1String("struct")) {
+                walk(c);
+            } else if (c->text(1) == QLatin1String("field")) {
+                const auto pathList = c->data(0, Roles::PathList).toStringList();
+                if (!pathList.isEmpty()) order << pathList.join("/");
+            }
+        }
+    };
+    walk(root);
+    return order;
+}
+
+QJsonObject SchemaEditor::findPacketByKey(const QString& key) const {
+    // key is "name#opcode"
+    const auto parts = key.split('#');
+    if (parts.size() != 2) return {};
+    const QString name = parts[0], opcode = parts[1];
+    const auto arr = schemaRoot.value("packets").toArray();
+    for (const auto& p : arr) {
+        const auto obj = p.toObject();
+        if (obj.value("name").toString() == name &&
+            obj.value("opcode").toVariant().toString() == opcode)
+            return obj;
+    }
+    return {};
+}
+
+static void collectPathsRec(const QJsonValue& node, QStringList& prefix, QStringList& out) {
+    if (!node.isObject()) return;
+    const auto o = node.toObject();
+    if (o.contains("struct")) {
+        prefix.push_back(o.value("struct").toString());
+        const auto arr = o.value("data").toArray();
+        for (const auto& ch : arr) collectPathsRec(ch, prefix, out);
+        prefix.removeLast();
+        return;
+    }
+    // leaf "field"
+    const QString name = o.value("value").toString("<value>");
+    prefix.push_back(name);
+    out.push_back(prefix.join("/"));
+    prefix.removeLast();
+}
+
+QStringList SchemaEditor::orderedFieldPaths(const QJsonObject& packet) const {
+    QStringList out, prefix;
+    const QString pktName = packet.value("name").toString();
+    if (pktName.isEmpty()) return out;
+    prefix << pktName;
+    const auto arr = packet.value("data").toArray();
+    for (const auto& n : arr) collectPathsRec(n, prefix, out);
+    return out;
+}
+

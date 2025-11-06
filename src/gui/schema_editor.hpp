@@ -95,6 +95,9 @@ class SchemaEditor : public QMainWindow {
         bool saveValuesForKeyToFile(const QString& key) const;
         bool loadAllValuesFromFile();
         bool saveAllValuesToFile() const;
+        QStringList currentPacketTreeOrder() const;
+        QJsonObject findPacketByKey(const QString& key) const;
+        QStringList orderedFieldPaths(const QJsonObject& packet) const;
 
         // UDP serialization helpers
         QByteArray serializeCurrentPacket() const;
