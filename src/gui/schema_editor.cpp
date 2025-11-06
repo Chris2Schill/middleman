@@ -9,63 +9,91 @@ public:
     }
 };
 
-class ValueDelegate : public QStyledItemDelegate {
-    public:
-        using QStyledItemDelegate::QStyledItemDelegate;
+// ---------------- ValueDelegate -----------------
+QWidget* ValueDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+                                     const QModelIndex& index) const {
+    Q_UNUSED(option);
+    if (index.column() != 3) return nullptr;
+    const QModelIndex metaIdx = index.sibling(index.row(), 0);
+    const auto nodeType = metaIdx.data(Roles::NodeType).toString();
+    const auto typeName = metaIdx.data(Roles::TypeName).toString();
+    if (INT_LIMITS.contains(typeName)) {
+        auto* le = new QLineEdit(parent);
+        const auto lim = INT_LIMITS.value(typeName);
+        auto* v = new QIntValidator((int)lim.first, (int)lim.second, le);
+        le->setValidator(v);
+        le->setPlaceholderText(QString::number(lim.first)+".."+QString::number(lim.second));
+        return le;
+    }
+    if (FLOAT_TYPES.contains(typeName)) {
+        auto* le = new QLineEdit(parent);
+        auto* v = new QDoubleValidator(le);
+        v->setNotation(QDoubleValidator::StandardNotation);
+        le->setValidator(v);
+        le->setPlaceholderText("floating-point");
+        return le;
+    }
+    if (nodeType == "bits") {
+        auto* le = new QLineEdit(parent);
+        le->setPlaceholderText("hex (0x..) or binary (e.g. 101010)");
+        return le;
+    }
+    return nullptr;
+}
 
-        QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
-                const QModelIndex& index) const override {
-            Q_UNUSED(option);
-            if (index.column() != 3) return nullptr;
-            const QModelIndex metaIdx = index.sibling(index.row(), 0);
-            const auto nodeType = metaIdx.data(Roles::NodeType).toString();
-            const auto typeName = metaIdx.data(Roles::TypeName).toString();
-            if (INT_LIMITS.contains(typeName)) {
-                auto* le = new QLineEdit(parent);
-                const auto lim = INT_LIMITS.value(typeName);
-                auto* v = new QIntValidator((int)lim.first, (int)lim.second, le);
-                le->setValidator(v);
-                le->setPlaceholderText(QString::number(lim.first)+".."+QString::number(lim.second));
-                return le;
-            }
-            if (FLOAT_TYPES.contains(typeName)) {
-                auto* le = new QLineEdit(parent);
-                auto* v = new QDoubleValidator(le);
-                v->setNotation(QDoubleValidator::StandardNotation);
-                le->setValidator(v);
-                le->setPlaceholderText("floating-point");
-                return le;
-            }
-            if (nodeType == "bits") {
-                auto* le = new QLineEdit(parent);
-                le->setPlaceholderText("hex (0x..) or binary (e.g. 101010)");
-                return le;
-            }
-            return nullptr;
-        }
+void ValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const {
+    if (auto* le = qobject_cast<QLineEdit*>(editor)) {
+        model->setData(index, le->text());
+    } else {
+        QStyledItemDelegate::setModelData(editor, model, index);
+    }
+}
 
-        void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override {
-            if (auto* le = qobject_cast<QLineEdit*>(editor)) {
-                model->setData(index, le->text());
-            } else {
-                QStyledItemDelegate::setModelData(editor, model, index);
-            }
-        }
-};
+// ---------------- SchemaEditor ------------------
+SchemaEditor::SchemaEditor(const QString& schemaFile, QWidget* parent)
+    : QMainWindow(parent) {
+    setWindowTitle("Packet Schema Editor");
+    resize(1100, 700);
+    buildUi();
+    connectSignals();
+    loadSchemaFromFile(schemaFile);
+}
 
 void SchemaEditor::buildUi() {
     auto* central = new QWidget; setCentralWidget(central);
     auto* vbox = new QVBoxLayout(central);
 
+    // --- Toolbar for fast UDP send ---
+    topBar = addToolBar("Packet");
+    topBar->setMovable(false);
+    topBar->setIconSize(QSize(16,16));
 
-    // Top controls
+    hostEdit = new QLineEdit("127.0.0.1");
+    hostEdit->setMaximumWidth(160);
+    hostEdit->setPlaceholderText("Host/IP");
+    portSpin = new QSpinBox; portSpin->setRange(1, 65535); portSpin->setValue(3000); portSpin->setMaximumWidth(100);
+    leCheck = new QCheckBox("LE"); leCheck->setToolTip("Little Endian");
+    intervalSpin = new QSpinBox; intervalSpin->setRange(10, 60*60*1000); intervalSpin->setValue(1000); intervalSpin->setSuffix(" ms"); intervalSpin->setMaximumWidth(120);
+    sendBtn = new QToolButton; sendBtn->setText("Send"); sendBtn->setToolTip("Send UDP now"); sendBtn->setAutoRaise(true);
+    autoBtn = new QToolButton; autoBtn->setText("Auto OFF"); autoBtn->setCheckable(true); autoBtn->setToolTip("Toggle periodic send"); autoBtn->setAutoRaise(true);
+
+    topBar->addWidget(new QLabel("Host:")); topBar->addWidget(hostEdit);
+    topBar->addSeparator();
+    topBar->addWidget(new QLabel("Port:")); topBar->addWidget(portSpin);
+    topBar->addSeparator();
+    topBar->addWidget(new QLabel("Interval:")); topBar->addWidget(intervalSpin);
+    topBar->addSeparator();
+    topBar->addWidget(leCheck);
+    topBar->addSeparator();
+    topBar->addWidget(sendBtn);
+    topBar->addWidget(autoBtn);
+
     auto* top = new QHBoxLayout; vbox->addLayout(top);
     packetCombo = new QComboBox; packetCombo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     searchEdit = new QLineEdit; searchEdit->setPlaceholderText("Search fields…");
     top->addWidget(new QLabel("Packet:")); top->addWidget(packetCombo, 2);
     top->addSpacing(12);
     top->addWidget(new QLabel("Filter:")); top->addWidget(searchEdit, 3);
-
 
     // Tree
     tree = new QTreeWidget; vbox->addWidget(tree, 1);
@@ -74,16 +102,18 @@ void SchemaEditor::buildUi() {
     tree->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     tree->header()->setStretchLastSection(true);
     tree->setAlternatingRowColors(true);
+    // Install delegates: lock columns 0..2, editor only on column 3
     tree->setItemDelegateForColumn(0, new NoEditDelegate(tree));
     tree->setItemDelegateForColumn(1, new NoEditDelegate(tree));
     tree->setItemDelegateForColumn(2, new NoEditDelegate(tree));
     tree->setItemDelegateForColumn(3, new ValueDelegate(tree));
     tree->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
 
-
     // Status bar
     status = new QStatusBar; setStatusBar(status);
 
+    // Timer for auto-send
+    autoTimer = new QTimer(this); autoTimer->setTimerType(Qt::CoarseTimer);
 
     // Menus
     auto* fileMenu = menuBar()->addMenu("&File");
@@ -92,7 +122,6 @@ void SchemaEditor::buildUi() {
     actSaveValues = fileMenu->addAction("Save Values Only…");
     fileMenu->addSeparator();
     fileMenu->addAction("Quit", this, &QWidget::close, QKeySequence::Quit);
-
 
     auto* viewMenu = menuBar()->addMenu("&View");
     actExpandAll = viewMenu->addAction("Expand All");
@@ -110,29 +139,147 @@ void SchemaEditor::buildUi() {
 void SchemaEditor::connectSignals() {
     // Rebuild tree when the selected packet changes
     connect(packetCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int){
-            saveCurrentPacketValues();
-            currentPacket = packetCombo->currentData().toJsonObject();
-            rebuildTree();
-        });
+        saveCurrentPacketValues();
+        currentPacket = packetCombo->currentData().toJsonObject();
+        rebuildTree();
+    });
+    // Store edits live
     connect(tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item, int column){
-            if (column != 3) return; // Value column only
-            const QString kind = item->text(1);
-            if (kind != "field") return;
-            const auto pathList = item->data(0, Roles::PathList).toStringList();
-            if (pathList.isEmpty()) return;
-            const QString pathKey = pathList.join("/");
-            storedValues[packetKey(currentPacket)][pathKey] = item->text(3);
-        });
+        if (column != 3) return; // Value column only
+        if (item->text(1) != "field") return;
+        const auto pathList = item->data(0, Roles::PathList).toStringList();
+        if (pathList.isEmpty()) return;
+        storedValues[packetKey(currentPacket)][pathList.join("/")] = item->text(3);
+    });
 
+    // Menu actions
     connect(actSendUdp, &QAction::triggered, this, &SchemaEditor::onSendUdp);
+    connect(actExpandAll, &QAction::triggered, tree, &QTreeWidget::expandAll);
+    connect(actCollapseAll, &QAction::triggered, tree, &QTreeWidget::collapseAll);
 
+    // Endianness: keep menu action and toolbar checkbox in sync
     connect(actLittleEndian, &QAction::toggled, this, [this](bool on){
-            littleEndian = on;
-            status->showMessage(on ? "Little endian" : "Big endian", 2000);
-        });
+        if (leCheck->isChecked() != on) leCheck->setChecked(on);
+        littleEndian = on;
+        status->showMessage(on ? "Little endian" : "Big endian", 1500);
+    });
+    connect(leCheck, &QCheckBox::toggled, this, [this](bool on){
+        if (actLittleEndian->isChecked() != on) actLittleEndian->setChecked(on);
+        littleEndian = on;
+    });
+
+    // Toolbar buttons
+    connect(sendBtn, &QToolButton::clicked, this, [this]{
+        const QByteArray d = serializeCurrentPacket();
+        QUdpSocket sock; sock.writeDatagram(d, QHostAddress(hostEdit->text()), quint16(portSpin->value()));
+        status->showMessage(QString("UDP sent %1 bytes to %2:%3").arg(d.size()).arg(hostEdit->text()).arg(portSpin->value()), 2000);
+    });
+    connect(autoBtn, &QToolButton::toggled, this, [this](bool on){
+        autoBtn->setText(on ? "Auto ON" : "Auto OFF");
+        autoTimer->stop();
+        if (on) {
+            autoTimer->start(intervalSpin->value());
+        }
+    });
+    connect(autoTimer, &QTimer::timeout, this, [this]{
+        const QByteArray d = serializeCurrentPacket();
+        QUdpSocket sock; sock.writeDatagram(d, QHostAddress(hostEdit->text()), quint16(portSpin->value()));
+    });
 }
 
-// -------------------------- UDP send -------------------------------
+void SchemaEditor::loadSchemaFromFile(const QString& filePath) {
+    QFile f(filePath);
+    if (!f.open(QIODevice::ReadOnly)) { QMessageBox::warning(this, "Load Schema", f.errorString()); return; }
+    const auto text = QString::fromUtf8(f.readAll()); f.close();
+    QJsonParseError err; auto doc = QJsonDocument::fromJson(text.toUtf8(), &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
+        QMessageBox::critical(this, "Schema", QString("JSON parse error: %1").arg(err.errorString())); return;
+    }
+    schemaRoot = doc.object();
+    populatePacketCombo();
+}
+
+void SchemaEditor::populatePacketCombo() {
+    packetCombo->clear();
+    const auto packets = schemaRoot.value("packets").toArray();
+    for (const auto& p : packets) {
+        const auto obj = p.toObject();
+        packetCombo->addItem(obj.value("name").toString(), obj);
+    }
+    if (packetCombo->count() > 0) {
+        currentPacket = packetCombo->currentData().toJsonObject();
+        rebuildTree();
+    }
+}
+
+void SchemaEditor::saveCurrentPacketValues() {
+    if (tree->topLevelItemCount() == 0 || currentPacket.isEmpty()) return;
+    const QString key = packetKey(currentPacket);
+    QHash<QString, QString> map = storedValues.value(key);
+    auto* root = tree->topLevelItem(0);
+    std::function<void(QTreeWidgetItem*)> walk = [&](QTreeWidgetItem* item){
+        for (int i=0;i<item->childCount();++i) {
+            auto* c = item->child(i);
+            const QString kind = c->text(1);
+            if (kind == "struct") { walk(c); }
+            else if (kind == "field") {
+                const auto pathList = c->data(0, Roles::PathList).toStringList();
+                if (!pathList.isEmpty()) map[pathList.join("/")] = c->text(3);
+            }
+        }
+    };
+    walk(root);
+    storedValues.insert(key, map);
+}
+
+void SchemaEditor::rebuildTree() {
+    tree->clear();
+    if (currentPacket.isEmpty()) return;
+    auto* root = new QTreeWidgetItem(tree, QStringList{currentPacket.value("name").toString(), "packet", "", ""});
+    root->setData(0, Roles::NodeType, "packet");
+    root->setData(0, Roles::PathList, QStringList{currentPacket.value("name").toString()});
+    const auto data = currentPacket.value("data").toArray();
+    for (const auto& n : data) addNodeRecursive(root, n, QStringList{currentPacket.value("name").toString()});
+    tree->expandToDepth(1);
+}
+
+void SchemaEditor::addNodeRecursive(QTreeWidgetItem* parent, const QJsonValue& nodeVal, QStringList path) {
+    if (!nodeVal.isObject()) return;
+    const auto obj = nodeVal.toObject();
+    if (obj.contains("struct")) {
+        const auto structName = obj.value("struct").toString();
+        auto* it = new QTreeWidgetItem(parent, QStringList{structName, "struct", "", ""});
+        it->setData(0, Roles::NodeType, "struct");
+        path.push_back(structName);
+        it->setData(0, Roles::PathList, path);
+        const auto arr = obj.value("data").toArray();
+        for (const auto& child : arr) addNodeRecursive(it, child, path);
+        return;
+    }
+    const auto valueName = obj.value("value").toString("<value>");
+    QString typeOrSize, nodeType;
+    if (obj.contains("type")) { typeOrSize = obj.value("type").toString(); nodeType = typeOrSize; }
+    else if (obj.contains("size")) { typeOrSize = QString::number(obj.value("size").toInt()) + " bits"; nodeType = "bits"; }
+
+    auto* it = new QTreeWidgetItem(parent, QStringList{valueName, "field", typeOrSize, ""});
+    it->setFlags(it->flags() | Qt::ItemIsEditable); // allow editing at item-level
+    it->setData(0, Roles::NodeType, nodeType);
+    it->setData(0, Roles::TypeName, obj.value("type").toString());
+    it->setData(0, Roles::SizeBits, obj.value("size").toInt());
+    path.push_back(valueName);
+    it->setData(0, Roles::PathList, path);
+
+    // Restore saved value if present
+    const QString pathKey = path.join("/");
+    const QString key = packetKey(currentPacket);
+    if (storedValues.contains(key)) {
+        const auto& map = storedValues[key];
+        auto itVal = map.find(pathKey);
+        if (itVal != map.end()) it->setText(3, itVal.value());
+    }
+}
+
+// ---------------- UDP -------------------------
 void SchemaEditor::onSendUdp() {
     if (tree->topLevelItemCount() == 0) { QMessageBox::warning(this, "Send UDP", "No packet loaded."); return; }
     bool ok = false;
@@ -154,7 +301,7 @@ void SchemaEditor::onSendUdp() {
 QByteArray SchemaEditor::serializeCurrentPacket() const {
     QByteArray buf;
     QDataStream ds(&buf, QIODevice::WriteOnly);
-    ds.setByteOrder(littleEndian ? QDataStream::LittleEndian : QDataStream::BigEndian);
+    ds.setByteOrder(QDataStream::BigEndian); // network order
     if (tree->topLevelItemCount() == 0) return buf;
     auto* root = tree->topLevelItem(0);
     std::function<void(QTreeWidgetItem*)> walk = [&](QTreeWidgetItem* item){
@@ -167,11 +314,8 @@ QByteArray SchemaEditor::serializeCurrentPacket() const {
                 const QString typeName = c->data(0, Roles::TypeName).toString();
                 const int sizeBits = c->data(0, Roles::SizeBits).toInt();
                 const QString valueText = c->text(3).trimmed();
-                if (!typeName.isEmpty()) {
-                    writeField(ds, typeName, valueText);
-                } else if (sizeBits > 0) {
-                    writeBits(ds, sizeBits, valueText, littleEndian);
-                }
+                if (!typeName.isEmpty())      writeField(ds, typeName, valueText);
+                else if (sizeBits > 0)        writeBits(ds, sizeBits, valueText);
             }
         }
     };
@@ -195,10 +339,9 @@ void SchemaEditor::writeField(QDataStream& ds, const QString& typeName, const QS
     if (typeName == "double") { ds << double(toD(valueText)); return; }
 }
 
-void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& valueText, bool littleEndian) {
+void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& valueText) {
     const int bytes = (sizeBits + 7)/8;
     QByteArray raw(bytes, '\0');
-
     QString s = valueText.trimmed();
     if (!s.isEmpty()) {
         if (s.startsWith("0x", Qt::CaseInsensitive)) {
@@ -206,132 +349,12 @@ void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& value
             QByteArray parsed = QByteArray::fromHex(hex);
             if (!parsed.isEmpty()) {
                 int copy = qMin(parsed.size(), bytes);
-                // Default layout: big-endian (right-aligned)
-                memcpy(raw.data() + (bytes - copy),
-                       parsed.constData() + (parsed.size() - copy),
-                       copy);
+                memcpy(raw.data() + (bytes - copy), parsed.constData() + (parsed.size() - copy), copy);
             }
         } else {
-            // Binary string (MSB first)
-            quint64 acc = 0;
-            for (QChar ch : s) {
-                if (ch == '0' || ch == '1') acc = (acc << 1) | (ch == '1');
-            }
+            quint64 acc = 0; for (QChar ch : s) { if (ch == '0' || ch == '1') { acc = (acc<<1) | (ch == '1'); } }
             for (int i = 0; i < bytes; ++i) { raw[bytes-1-i] = char(acc & 0xFF); acc >>= 8; }
         }
     }
-
-    if (littleEndian && raw.size() > 1) {
-        // Reverse byte order for LE
-        for (int i = 0, j = raw.size() - 1; i < j; ++i, --j) {
-            char t = raw[i]; raw[i] = raw[j]; raw[j] = t;
-        }
-    }
     ds.writeRawData(raw.constData(), raw.size());
-}
-
-// -------------------------- existing methods -----------------------
-void SchemaEditor::loadSchemaFromFile(const QString& filePath) {
-    QFile f(filePath);
-    if (!f.open(QIODevice::ReadOnly)) {
-        QMessageBox::warning(this, "Load Schema", f.errorString());
-        return;
-    }
-    const QString text = QString::fromUtf8(f.readAll());
-    f.close();
-    QJsonParseError err; auto doc = QJsonDocument::fromJson(text.toUtf8(), &err);
-    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
-        QMessageBox::critical(this, "Schema", QString("JSON parse error: %1").arg(err.errorString()));
-        return;
-    }
-    schemaRoot = doc.object();
-    populatePacketCombo();
-}
-
-
-void SchemaEditor::populatePacketCombo() {
-    packetCombo->clear();
-    const auto packets = schemaRoot.value("packets").toArray();
-    for (const auto& p : packets) {
-        const auto obj = p.toObject();
-        packetCombo->addItem(obj.value("name").toString(), obj);
-    }
-    if (packetCombo->count() > 0) {
-        currentPacket = packetCombo->currentData().toJsonObject();
-        rebuildTree();
-    }
-}
-
-void SchemaEditor::saveCurrentPacketValues() {
-    if (tree->topLevelItemCount() == 0 || currentPacket.isEmpty()) return;
-    const QString key = packetKey(currentPacket);
-    QHash<QString, QString> map = storedValues.value(key);
-    auto* root = tree->topLevelItem(0);
-    std::function<void(QTreeWidgetItem*)> walk = [&](QTreeWidgetItem* item){
-        for (int i = 0; i < item->childCount(); ++i) {
-            auto* c = item->child(i);
-            const QString kind = c->text(1);
-            if (kind == "struct") { walk(c); }
-            else if (kind == "field") {
-                const auto pathList = c->data(0, Roles::PathList).toStringList();
-                if (!pathList.isEmpty()) {
-                    map[pathList.join("/")] = c->text(3);
-                }
-            }
-        }
-    };
-    walk(root);
-    storedValues.insert(key, map);
-}
-
-
-void SchemaEditor::rebuildTree() {
-    tree->clear();
-    if (currentPacket.isEmpty()) return;
-    auto* root = new QTreeWidgetItem(tree, QStringList{currentPacket.value("name").toString(), "packet", "", ""});
-    root->setData(0, Roles::NodeType, "packet");
-    root->setData(0, Roles::PathList, QStringList{currentPacket.value("name").toString()});
-    const auto data = currentPacket.value("data").toArray();
-    for (const auto& n : data) addNodeRecursive(root, n, QStringList{currentPacket.value("name").toString()});
-    tree->expandToDepth(1);
-}
-
-
-void SchemaEditor::addNodeRecursive(QTreeWidgetItem* parent, const QJsonValue& nodeVal, QStringList path) {
-    if (!nodeVal.isObject()) return;
-    const auto obj = nodeVal.toObject();
-    if (obj.contains("struct")) {
-        const auto structName = obj.value("struct").toString();
-        auto* it = new QTreeWidgetItem(parent, QStringList{structName, "struct", "", ""});
-        it->setData(0, Roles::NodeType, "struct");
-        path.push_back(structName);
-        it->setData(0, Roles::PathList, path);
-        const auto arr = obj.value("data").toArray();
-        for (const auto& child : arr) addNodeRecursive(it, child, path);
-        return;
-    }
-    const auto valueName = obj.value("value").toString("<value>");
-    QString typeOrSize, nodeType;
-    if (obj.contains("type")) {
-        typeOrSize = obj.value("type").toString();
-        nodeType = typeOrSize;
-    } else if (obj.contains("size")) {
-        typeOrSize = QString::number(obj.value("size").toInt()) + " bits";
-        nodeType = "bits";
-    }
-    auto* it = new QTreeWidgetItem(parent, QStringList{valueName, "field", typeOrSize, ""});
-    it->setFlags(it->flags() | Qt::ItemIsEditable);
-    it->setData(0, Roles::NodeType, nodeType);
-    it->setData(0, Roles::TypeName, obj.value("type").toString());
-    it->setData(0, Roles::SizeBits, obj.value("size").toInt());
-    path.push_back(valueName);
-    it->setData(0, Roles::PathList, path);
-    // Restore saved value if present
-    const QString pathKey = path.join("/");
-    const QString key = packetKey(currentPacket);
-    if (storedValues.contains(key)) {
-        const auto& map = storedValues[key];
-        auto itVal = map.find(pathKey);
-        if (itVal != map.end()) it->setText(3, itVal.value());
-    }
 }

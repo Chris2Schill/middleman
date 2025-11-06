@@ -25,15 +25,18 @@ static const QHash<QString, QPair<long long,long long>> INT_LIMITS = {
 
 static const QSet<QString> FLOAT_TYPES = {"float", "double"};
 
+class ValueDelegate : public QStyledItemDelegate {
+    public:
+        using QStyledItemDelegate::QStyledItemDelegate;
+
+        QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+                const QModelIndex& index) const override;
+        void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+};
+
 class SchemaEditor : public QMainWindow {
     public:
-        SchemaEditor(const QString& schemaFile, QWidget* parent=nullptr) : QMainWindow(parent) {
-            setWindowTitle("Packet Schema Editor");
-            resize(1100, 700);
-            buildUi();
-            connectSignals();
-            loadSchemaFromFile(schemaFile);
-        }
+        SchemaEditor(const QString& schemaFile, QWidget* parent=nullptr);
 
     private:
         QJsonObject schemaRoot;
@@ -50,6 +53,18 @@ class SchemaEditor : public QMainWindow {
         QAction *actCollapseAll{};
         QAction *actSendUdp{};
         QAction *actLittleEndian{};
+
+        // Toolbar widgets
+        QToolBar* topBar{};
+        QLineEdit* hostEdit{};
+        QSpinBox* portSpin{};
+        QToolButton* sendBtn{};
+        QToolButton* autoBtn{}; // start/stop auto-send
+        QSpinBox* intervalSpin{}; // ms interval
+        QCheckBox* leCheck{}; // little-endian quick toggle
+
+        // Auto-send timer
+        QTimer* autoTimer{};
 
         bool littleEndian = false;
 
@@ -73,7 +88,7 @@ class SchemaEditor : public QMainWindow {
         // UDP serialization helpers
         QByteArray serializeCurrentPacket() const;
         static void writeField(QDataStream& ds, const QString& typeName, const QString& valueText);
-        static void writeBits(QDataStream& ds, int sizeBits, const QString& valueText, bool littleEndian);
+        static void writeBits(QDataStream& ds, int sizeBits, const QString& valueText);
 
         private slots:
             void onSendUdp();
