@@ -377,12 +377,30 @@ void SchemaEditor::writeField(QDataStream& ds, const QString& typeName, const QS
         if (typeName == "uint8")  { u = std::min<qulonglong>(u, (1ull<<8)-1);   ds << quint8(u);  return; }
         if (typeName == "uint16") { u = std::min<qulonglong>(u, (1ull<<16)-1);  ds << quint16(u); return; }
         if (typeName == "uint32") { u = std::min<qulonglong>(u, 0xFFFFFFFFull); ds << quint32(u); return; }
-        /* uint64 */                { ds << quint64(u); return; }
+        if (typeName == "uint64") { ds << quint64(u); return; }
     }
 
     // ---- Floating point ----
-    if (typeName == "float")  { bool ok = false; double d = val.toDouble(&ok); ds << float(ok ? d : 0.0);  return; }
-    if (typeName == "double") { bool ok = false; double d = val.toDouble(&ok); ds << double(ok ? d : 0.0); return; }
+    if (typeName == "float") {
+        bool ok=false; double d = QLocale::c().toDouble(valueText.trimmed(), &ok);
+        float f = ok ? float(d) : 0.0f;
+
+        const auto old = ds.floatingPointPrecision();
+        ds.setFloatingPointPrecision(QDataStream::SinglePrecision); // 4 bytes
+        ds << f;
+        ds.setFloatingPointPrecision(old);
+        return;
+    }
+
+    if (typeName == "double") {
+        bool ok=false; double d = QLocale::c().toDouble(valueText.trimmed(), &ok);
+
+        const auto old = ds.floatingPointPrecision();
+        ds.setFloatingPointPrecision(QDataStream::DoublePrecision); // 8 bytes
+        ds << (ok ? d : 0.0);
+        ds.setFloatingPointPrecision(old);
+        return;
+    }
 }
 
 void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& valueText) {
