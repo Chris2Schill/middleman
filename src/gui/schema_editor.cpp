@@ -289,7 +289,8 @@ void SchemaEditor::addNodeRecursive(QTreeWidgetItem* parent, const QJsonValue& n
     if (obj.contains("type")) { typeOrSize = obj.value("type").toString(); nodeType = typeOrSize; }
     else if (obj.contains("size")) { typeOrSize = QString::number(obj.value("size").toInt()) + " bits"; nodeType = "bits"; }
 
-    auto* it = new QTreeWidgetItem(parent, QStringList{valueName, "field", typeOrSize, ""});
+    QString defaultValue = "0";
+    auto* it = new QTreeWidgetItem(parent, QStringList{valueName, "field", typeOrSize, defaultValue});
     it->setFlags(it->flags() | Qt::ItemIsEditable); // allow editing at item-level
     it->setData(0, Roles::NodeType, nodeType);
     it->setData(0, Roles::TypeName, obj.value("type").toString());
@@ -297,14 +298,16 @@ void SchemaEditor::addNodeRecursive(QTreeWidgetItem* parent, const QJsonValue& n
     path.push_back(valueName);
     it->setData(0, Roles::PathList, path);
 
+
     // Restore saved value if present
     const QString pathKey = path.join("/");
     const QString key = packetKey(currentPacket);
-    if (storedValues.contains(key)) {
-        const auto& map = storedValues[key];
-        auto itVal = map.find(pathKey);
-        if (itVal != map.end()) it->setText(3, itVal.value());
+
+    auto& mapRef = storedValues[key];
+    if (!mapRef.contains(pathKey)) {
+        mapRef.insert(pathKey, QStringLiteral("0"));
     }
+    it->setText(3, mapRef.value(pathKey));
 }
 
 // ---------------- UDP -------------------------
@@ -353,6 +356,12 @@ QByteArray SchemaEditor::serializeCurrentPacket() const {
 
 void SchemaEditor::writeField(QDataStream& ds, const QString& typeName, const QString& valueText) {
     QString val = valueText.trimmed();
+
+    // Default empty values to 0
+    if (val.isEmpty()) val = "0";
+
+    // Treat "\\0" as a literal null byte
+    if (val == "\\0") { ds.writeRawData("\0", 1); return; }
 
     auto parseUnsigned = [](const QString& s, qulonglong& out)->bool {
         bool ok = false;
