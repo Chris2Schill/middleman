@@ -42,6 +42,10 @@ void SchemaEditor::buildUi() {
     actExpandAll = viewMenu->addAction("Expand All");
     actCollapseAll = viewMenu->addAction("Collapse All");
 
+    viewMenu->addSeparator();
+    actLittleEndian = viewMenu->addAction("Little Endian");
+    actLittleEndian->setCheckable(true);
+    actLittleEndian->setChecked(false); // default Big Endian
 
     auto* actionsMenu = menuBar()->addMenu("&Actions");
     actSendUdp = actionsMenu->addAction("Send UDP…");
@@ -62,10 +66,14 @@ void SchemaEditor::connectSignals() {
             if (pathList.isEmpty()) return;
             const QString pathKey = pathList.join("/");
             storedValues[packetKey(currentPacket)][pathKey] = item->text(3);
-            });
+        });
 
-    // Placeholder for future change tracking on values
     connect(actSendUdp, &QAction::triggered, this, &SchemaEditor::onSendUdp);
+
+    connect(actLittleEndian, &QAction::toggled, this, [this](bool on){
+            littleEndian = on;
+            status->showMessage(on ? "Little endian" : "Big endian", 2000);
+        });
 }
 
 // -------------------------- UDP send -------------------------------
@@ -90,7 +98,7 @@ void SchemaEditor::onSendUdp() {
 QByteArray SchemaEditor::serializeCurrentPacket() const {
     QByteArray buf;
     QDataStream ds(&buf, QIODevice::WriteOnly);
-    ds.setByteOrder(QDataStream::BigEndian);
+    ds.setByteOrder(littleEndian ? QDataStream::LittleEndian : QDataStream::BigEndian);
     if (tree->topLevelItemCount() == 0) return buf;
     auto* root = tree->topLevelItem(0);
     std::function<void(QTreeWidgetItem*)> walk = [&](QTreeWidgetItem* item){
@@ -106,7 +114,7 @@ QByteArray SchemaEditor::serializeCurrentPacket() const {
                 if (!typeName.isEmpty()) {
                     writeField(ds, typeName, valueText);
                 } else if (sizeBits > 0) {
-                    writeBits(ds, sizeBits, valueText);
+                    writeBits(ds, sizeBits, valueText, littleEndian);
                 }
             }
         }
@@ -131,9 +139,10 @@ void SchemaEditor::writeField(QDataStream& ds, const QString& typeName, const QS
     if (typeName == "double") { ds << double(toD(valueText)); return; }
 }
 
-void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& valueText) {
+void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& valueText, bool littleEndian) {
     const int bytes = (sizeBits + 7)/8;
     QByteArray raw(bytes, '\0');
+
     QString s = valueText.trimmed();
     if (!s.isEmpty()) {
         if (s.startsWith("0x", Qt::CaseInsensitive)) {
@@ -141,16 +150,29 @@ void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& value
             QByteArray parsed = QByteArray::fromHex(hex);
             if (!parsed.isEmpty()) {
                 int copy = qMin(parsed.size(), bytes);
-                memcpy(raw.data() + (bytes - copy), parsed.constData() + (parsed.size() - copy), copy);
+                // Default layout: big-endian (right-aligned)
+                memcpy(raw.data() + (bytes - copy),
+                       parsed.constData() + (parsed.size() - copy),
+                       copy);
             }
         } else {
-            quint64 acc = 0; for (QChar ch : s) { acc = (acc<<1) | (ch == '1'); }
+            // Binary string (MSB first)
+            quint64 acc = 0;
+            for (QChar ch : s) {
+                if (ch == '0' || ch == '1') acc = (acc << 1) | (ch == '1');
+            }
             for (int i = 0; i < bytes; ++i) { raw[bytes-1-i] = char(acc & 0xFF); acc >>= 8; }
+        }
+    }
+
+    if (littleEndian && raw.size() > 1) {
+        // Reverse byte order for LE
+        for (int i = 0, j = raw.size() - 1; i < j; ++i, --j) {
+            char t = raw[i]; raw[i] = raw[j]; raw[j] = t;
         }
     }
     ds.writeRawData(raw.constData(), raw.size());
 }
-
 
 // -------------------------- existing methods -----------------------
 void SchemaEditor::loadSchemaFromFile(const QString& filePath) {

@@ -93,6 +93,9 @@ class SchemaEditor : public QMainWindow {
         QAction *actExpandAll{};
         QAction *actCollapseAll{};
         QAction *actSendUdp{};
+        QAction *actLittleEndian{};
+
+        bool littleEndian = false;
 
         void buildUi();
         void connectSignals();
@@ -114,7 +117,7 @@ class SchemaEditor : public QMainWindow {
         // UDP serialization helpers
         QByteArray serializeCurrentPacket() const;
         static void writeField(QDataStream& ds, const QString& typeName, const QString& valueText);
-        static void writeBits(QDataStream& ds, int sizeBits, const QString& valueText);
+        static void writeBits(QDataStream& ds, int sizeBits, const QString& valueText, bool littleEndian);
 
         private slots:
             void onSendUdp();
