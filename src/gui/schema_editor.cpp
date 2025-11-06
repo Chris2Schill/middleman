@@ -1,4 +1,5 @@
 #include "schema_editor.hpp"
+
 void SchemaEditor::buildUi() {
     auto* central = new QWidget; setCentralWidget(central);
     auto* vbox = new QVBoxLayout(central);
@@ -49,11 +50,21 @@ void SchemaEditor::buildUi() {
 void SchemaEditor::connectSignals() {
     // Rebuild tree when the selected packet changes
     connect(packetCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int){
+            saveCurrentPacketValues();
             currentPacket = packetCombo->currentData().toJsonObject();
             rebuildTree();
+        });
+    connect(tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item, int column){
+            if (column != 3) return; // Value column only
+            const QString kind = item->text(1);
+            if (kind != "field") return;
+            const auto pathList = item->data(0, Roles::PathList).toStringList();
+            if (pathList.isEmpty()) return;
+            const QString pathKey = pathList.join("/");
+            storedValues[packetKey(currentPacket)][pathKey] = item->text(3);
             });
+
     // Placeholder for future change tracking on values
-    connect(tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem*, int){ /* no-op */ });
     connect(actSendUdp, &QAction::triggered, this, &SchemaEditor::onSendUdp);
 }
 
@@ -173,6 +184,28 @@ void SchemaEditor::populatePacketCombo() {
     }
 }
 
+void SchemaEditor::saveCurrentPacketValues() {
+    if (tree->topLevelItemCount() == 0 || currentPacket.isEmpty()) return;
+    const QString key = packetKey(currentPacket);
+    QHash<QString, QString> map = storedValues.value(key);
+    auto* root = tree->topLevelItem(0);
+    std::function<void(QTreeWidgetItem*)> walk = [&](QTreeWidgetItem* item){
+        for (int i = 0; i < item->childCount(); ++i) {
+            auto* c = item->child(i);
+            const QString kind = c->text(1);
+            if (kind == "struct") { walk(c); }
+            else if (kind == "field") {
+                const auto pathList = c->data(0, Roles::PathList).toStringList();
+                if (!pathList.isEmpty()) {
+                    map[pathList.join("/")] = c->text(3);
+                }
+            }
+        }
+    };
+    walk(root);
+    storedValues.insert(key, map);
+}
+
 
 void SchemaEditor::rebuildTree() {
     tree->clear();
@@ -215,4 +248,12 @@ void SchemaEditor::addNodeRecursive(QTreeWidgetItem* parent, const QJsonValue& n
     it->setData(0, Roles::SizeBits, obj.value("size").toInt());
     path.push_back(valueName);
     it->setData(0, Roles::PathList, path);
+    // Restore saved value if present
+    const QString pathKey = path.join("/");
+    const QString key = packetKey(currentPacket);
+    if (storedValues.contains(key)) {
+        const auto& map = storedValues[key];
+        auto itVal = map.find(pathKey);
+        if (itVal != map.end()) it->setText(3, itVal.value());
+    }
 }

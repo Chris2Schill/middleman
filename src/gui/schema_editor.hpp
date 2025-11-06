@@ -85,16 +85,29 @@ class SchemaEditor : public QMainWindow {
         QComboBox* packetCombo{};
         QLineEdit* searchEdit{};
         QTreeWidget* tree{};
-        QStatusBar* status{}; // status bar
+        QStatusBar* status{};
 
-        QAction *actOpen{}, *actSavePacket{}, *actSaveValues{}, *actExpandAll{}, *actCollapseAll{};
-        QAction *actSendUdp{}; // new action
+        QAction *actOpen{};
+        QAction *actSavePacket{};
+        QAction *actSaveValues{};
+        QAction *actExpandAll{};
+        QAction *actCollapseAll{};
+        QAction *actSendUdp{};
 
         void buildUi();
         void connectSignals();
 
+        // Value persistence helpers
+        QHash<QString, QHash<QString, QString>> storedValues;
+        QString packetKey(const QJsonObject& obj) const {
+            const QString name = obj.value("name").toString();
+            const QString opcode = obj.value("opcode").toVariant().toString();
+            return name + "#" + opcode; // stable key per packet type
+        }
+
         void loadSchemaFromFile(const QString& filePath);
         void populatePacketCombo();
+        void saveCurrentPacketValues();
         void rebuildTree();
         void addNodeRecursive(QTreeWidgetItem* parent, const QJsonValue& nodeVal, QStringList path);
 
