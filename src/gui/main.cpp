@@ -61,6 +61,9 @@ public:
             .remoteHost = "172.28.208.1",
             .remotePort = 3000,
             .logToStdout = true,
+            .multicastEnabled = false,
+            .multicastGroup = "224.10.10.19",
+            .multicastTTL = 64,
         };
         ui.connectionEditor->setConfig(defaultConn);
 
@@ -74,17 +77,20 @@ public:
                 .local_port  = (unsigned short)c.localPort,
                 .remote_host = c.remoteHost.toStdString(),
                 .remote_port = (unsigned short)c.remotePort,
-                .multicast_group = "224.10.10.19",
+                .multicast_group = c.multicastGroup.toStdString(),
                 .mutator = mm::mutators::json_rule_based_mutator::fromJsonString("dis_pdus_scaffold.json", rulesJsonStr, to_big_endian),
                 .log_to_stdout = ui.connectionEditor->logStdoutChecked(),
             };
 
             proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);
-            proxy_server->on_recv = [this](auto socket, auto readBuf, auto sender, auto ec, auto bytes){
+
+            // Cache the dstHost here for performance
+            QHostAddress dstHost(QString::fromStdString((proxy_server->getSink().address().to_string())));
+
+            proxy_server->on_recv = [this,&dstHost](auto socket, auto readBuf, auto sender, auto ec, auto bytes){
                 QByteArray readBufClone((const char*)readBuf->data(), bytes);
                 QHostAddress srcHost(QString::fromStdString(sender->address().to_string()));
-                QHostAddress dstHost("0.0.0.0");
-                QMetaObject::invokeMethod(this, [=]{
+                QMetaObject::invokeMethod(this, [=, &dstHost]{
                         int bytesClone = bytes;
 
                         ui.packetViewer->addPacket(
