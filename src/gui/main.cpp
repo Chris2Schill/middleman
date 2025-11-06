@@ -86,19 +86,18 @@ public:
 
             proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);
 
-            // Cache the dstHost here for performance
-            QHostAddress dstHost(QString::fromStdString((proxy_server->getSink().address().to_string())));
 
-            proxy_server->on_recv = [this,&dstHost](auto socket, auto readBuf, auto sender, auto ec, auto bytes){
+            proxy_server->on_recv = [this](auto socket, auto readBuf, auto sender, auto ec, auto bytes){
                 QByteArray readBufClone((const char*)readBuf->data(), bytes);
                 QHostAddress srcHost(QString::fromStdString(sender->address().to_string()));
-                QMetaObject::invokeMethod(this, [=, &dstHost]{
+                QHostAddress dstHost(QString::fromStdString((proxy_server->getSink().address().to_string())));
+                QMetaObject::invokeMethod(this, [=]{
                         int bytesClone = bytes;
 
                         ui.packetViewer->addPacket(
                                 readBufClone, srcHost, 3000, dstHost, 3000
                             );
-                    },Qt::QueuedConnection) ;
+                    },Qt::QueuedConnection);
             };
             ui.rulesEditor->setEnabled(false);
         };
