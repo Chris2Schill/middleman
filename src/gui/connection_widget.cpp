@@ -199,7 +199,3 @@ void ConnectionWidget::updateMulticastEnabled() {
     multicastLabel_->setEnabled(mcOn);
     multicastTTLLabel_->setEnabled(mcOn);
 }
-
-bool ConnectionWidget::logStdoutChecked() {
-    return logStdoutCheck_->isChecked();
-}

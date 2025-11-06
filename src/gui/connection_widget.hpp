@@ -31,7 +31,6 @@ public:
     void setInputsEnabled(bool on);
     void setRunning(bool running);
     bool isRunning() const { return running_; }
-    bool logStdoutChecked();
 
     std::function<void(const ConnectionConfig&)> onStart;
     std::function<void()> onStop;

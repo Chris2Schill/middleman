@@ -77,9 +77,11 @@ public:
                 .local_port  = (unsigned short)c.localPort,
                 .remote_host = c.remoteHost.toStdString(),
                 .remote_port = (unsigned short)c.remotePort,
+                .multicast_enabled = c.multicastEnabled,
                 .multicast_group = c.multicastGroup.toStdString(),
+                .multicast_ttl = c.multicastTTL,
                 .mutator = mm::mutators::json_rule_based_mutator::fromJsonString("dis_pdus_scaffold.json", rulesJsonStr, to_big_endian),
-                .log_to_stdout = ui.connectionEditor->logStdoutChecked(),
+                .log_to_stdout = c.logToStdout,
             };
 
             proxy_server = std::make_shared<mm::network::middleman_proxy>(&asio_ctx, settings);
