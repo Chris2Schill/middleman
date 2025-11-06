@@ -17,14 +17,26 @@ QWidget* ValueDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem
     const QModelIndex metaIdx = index.sibling(index.row(), 0);
     const auto nodeType = metaIdx.data(Roles::NodeType).toString();
     const auto typeName = metaIdx.data(Roles::TypeName).toString();
-    if (INT_LIMITS.contains(typeName)) {
-        auto* le = new QLineEdit(parent);
-        const auto lim = INT_LIMITS.value(typeName);
-        auto* v = new QIntValidator((int)lim.first, (int)lim.second, le);
-        le->setValidator(v);
-        le->setPlaceholderText(QString::number(lim.first)+".."+QString::number(lim.second));
-        return le;
-    }
+    if (SIGNED_INT_TYPES.contains(typeName)) {
+                // Use QIntValidator for <=32-bit; 64-bit signed gets regex
+                auto* le = new QLineEdit(parent);
+                if (typeName == "int8")   { le->setValidator(new QIntValidator(-(1<<7),  (1<<7)-1, le)); }
+                else if (typeName == "int16") { le->setValidator(new QIntValidator(-(1<<15), (1<<15)-1, le)); }
+                else if (typeName == "int32") { le->setValidator(new QIntValidator(INT_MIN, INT_MAX, le)); }
+                else { // int64
+                    // Accept long decimal or hex; range will be enforced on commit
+                    le->setValidator(new QRegularExpressionValidator(QRegularExpression("^-?[0-9]+$|^0x[0-9A-Fa-f]+$"), le));
+                }
+                le->setPlaceholderText("signed integer (dec or 0x..)");
+                return le;
+            }
+            if (UNSIGNED_INT_TYPES.contains(typeName)) {
+                auto* le = new QLineEdit(parent);
+                // Accept large decimal or hex without clamping in the validator
+                le->setValidator(new QRegularExpressionValidator(QRegularExpression("^[0-9]+$|^0x[0-9A-Fa-f]+$"), le));
+                le->setPlaceholderText("unsigned (dec or 0x..)");
+                return le;
+            }
     if (FLOAT_TYPES.contains(typeName)) {
         auto* le = new QLineEdit(parent);
         auto* v = new QDoubleValidator(le);
@@ -324,19 +336,53 @@ QByteArray SchemaEditor::serializeCurrentPacket() const {
 }
 
 void SchemaEditor::writeField(QDataStream& ds, const QString& typeName, const QString& valueText) {
-    auto toLL = [&](const QString& s)->long long{
-        bool ok=false; long long v=0; if (s.startsWith("0x", Qt::CaseInsensitive)) v = s.toLongLong(&ok, 16); else v = s.toLongLong(&ok, 10); return ok ? v : 0; };
-    auto toD = [&](const QString& s)->double{ bool ok=false; double v=s.toDouble(&ok); return ok? v:0.0; };
-    if (typeName == "int8")   { ds << qint8(toLL(valueText)); return; }
-    if (typeName == "uint8")  { ds << quint8(toLL(valueText)); return; }
-    if (typeName == "int16")  { ds << qint16(toLL(valueText)); return; }
-    if (typeName == "uint16") { ds << quint16(toLL(valueText)); return; }
-    if (typeName == "int32")  { ds << qint32(toLL(valueText)); return; }
-    if (typeName == "uint32") { ds << quint32(toLL(valueText)); return; }
-    if (typeName == "int64")  { ds << qint64(toLL(valueText)); return; }
-    if (typeName == "uint64") { ds << quint64(toLL(valueText)); return; }
-    if (typeName == "float")  { ds << float(toD(valueText));  return; }
-    if (typeName == "double") { ds << double(toD(valueText)); return; }
+    QString val = valueText.trimmed();
+
+    auto parseUnsigned = [](const QString& s, qulonglong& out)->bool {
+        bool ok = false;
+        qulonglong v = 0;
+        if (s.startsWith("0x", Qt::CaseInsensitive))
+            v = s.mid(2).toULongLong(&ok, 16);
+        else
+            v = s.toULongLong(&ok, 10);
+        if (ok) out = v;
+        return ok;
+    };
+
+    auto parseSigned = [](const QString& s, qlonglong& out)->bool {
+        bool ok = false;
+        qlonglong v = 0;
+        if (s.startsWith("0x", Qt::CaseInsensitive))
+            v = s.mid(2).toLongLong(&ok, 16);
+        else
+            v = s.toLongLong(&ok, 10);
+        if (ok) out = v;
+        return ok;
+    };
+
+    // ---- Signed integer types ----
+    if (typeName == "int8" || typeName == "int16" || typeName == "int32" || typeName == "int64") {
+        qlonglong v = 0;
+        parseSigned(val, v);
+        if (typeName == "int8")   { v = std::clamp<qlonglong>(v, -(1ll<<7),  (1ll<<7)-1);  ds << qint8(v);  return; }
+        if (typeName == "int16")  { v = std::clamp<qlonglong>(v, -(1ll<<15), (1ll<<15)-1); ds << qint16(v); return; }
+        if (typeName == "int32")  { v = std::clamp<qlonglong>(v, INT_MIN, INT_MAX);         ds << qint32(v); return; }
+        /* int64 */                 { ds << qint64(v); return; }
+    }
+
+    // ---- Unsigned integer types ----
+    if (typeName == "uint8" || typeName == "uint16" || typeName == "uint32" || typeName == "uint64") {
+        qulonglong u = 0;
+        parseUnsigned(val, u);
+        if (typeName == "uint8")  { u = std::min<qulonglong>(u, (1ull<<8)-1);   ds << quint8(u);  return; }
+        if (typeName == "uint16") { u = std::min<qulonglong>(u, (1ull<<16)-1);  ds << quint16(u); return; }
+        if (typeName == "uint32") { u = std::min<qulonglong>(u, 0xFFFFFFFFull); ds << quint32(u); return; }
+        /* uint64 */                { ds << quint64(u); return; }
+    }
+
+    // ---- Floating point ----
+    if (typeName == "float")  { bool ok = false; double d = val.toDouble(&ok); ds << float(ok ? d : 0.0);  return; }
+    if (typeName == "double") { bool ok = false; double d = val.toDouble(&ok); ds << double(ok ? d : 0.0); return; }
 }
 
 void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& valueText) {
@@ -358,3 +404,4 @@ void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& value
     }
     ds.writeRawData(raw.constData(), raw.size());
 }
+

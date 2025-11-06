@@ -23,7 +23,11 @@ static const QHash<QString, QPair<long long,long long>> INT_LIMITS = {
     {"uint64",{0,          (long long)ULLONG_MAX}}
 };
 
+// Numeric categories
+static const QSet<QString> SIGNED_INT_TYPES = {"int8","int16","int32","int64"};
+static const QSet<QString> UNSIGNED_INT_TYPES = {"uint8","uint16","uint32","uint64"};
 static const QSet<QString> FLOAT_TYPES = {"float", "double"};
+
 
 class ValueDelegate : public QStyledItemDelegate {
     public:
