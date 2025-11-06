@@ -1,5 +1,58 @@
 #include "schema_editor.hpp"
 
+// Readonly delegate for columns we want locked
+class NoEditDelegate : public QStyledItemDelegate {
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+    QWidget* createEditor(QWidget*, const QStyleOptionViewItem&, const QModelIndex&) const override {
+        return nullptr; // never create an editor
+    }
+};
+
+class ValueDelegate : public QStyledItemDelegate {
+    public:
+        using QStyledItemDelegate::QStyledItemDelegate;
+
+        QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+                const QModelIndex& index) const override {
+            Q_UNUSED(option);
+            if (index.column() != 3) return nullptr;
+            const QModelIndex metaIdx = index.sibling(index.row(), 0);
+            const auto nodeType = metaIdx.data(Roles::NodeType).toString();
+            const auto typeName = metaIdx.data(Roles::TypeName).toString();
+            if (INT_LIMITS.contains(typeName)) {
+                auto* le = new QLineEdit(parent);
+                const auto lim = INT_LIMITS.value(typeName);
+                auto* v = new QIntValidator((int)lim.first, (int)lim.second, le);
+                le->setValidator(v);
+                le->setPlaceholderText(QString::number(lim.first)+".."+QString::number(lim.second));
+                return le;
+            }
+            if (FLOAT_TYPES.contains(typeName)) {
+                auto* le = new QLineEdit(parent);
+                auto* v = new QDoubleValidator(le);
+                v->setNotation(QDoubleValidator::StandardNotation);
+                le->setValidator(v);
+                le->setPlaceholderText("floating-point");
+                return le;
+            }
+            if (nodeType == "bits") {
+                auto* le = new QLineEdit(parent);
+                le->setPlaceholderText("hex (0x..) or binary (e.g. 101010)");
+                return le;
+            }
+            return nullptr;
+        }
+
+        void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override {
+            if (auto* le = qobject_cast<QLineEdit*>(editor)) {
+                model->setData(index, le->text());
+            } else {
+                QStyledItemDelegate::setModelData(editor, model, index);
+            }
+        }
+};
+
 void SchemaEditor::buildUi() {
     auto* central = new QWidget; setCentralWidget(central);
     auto* vbox = new QVBoxLayout(central);
@@ -21,6 +74,9 @@ void SchemaEditor::buildUi() {
     tree->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     tree->header()->setStretchLastSection(true);
     tree->setAlternatingRowColors(true);
+    tree->setItemDelegateForColumn(0, new NoEditDelegate(tree));
+    tree->setItemDelegateForColumn(1, new NoEditDelegate(tree));
+    tree->setItemDelegateForColumn(2, new NoEditDelegate(tree));
     tree->setItemDelegateForColumn(3, new ValueDelegate(tree));
     tree->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
 
