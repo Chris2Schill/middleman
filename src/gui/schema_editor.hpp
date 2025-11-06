@@ -57,6 +57,9 @@ class SchemaEditor : public QMainWindow {
         QAction *actCollapseAll{};
         QAction *actSendUdp{};
         QAction *actLittleEndian{};
+        QAction *actLoadValues{};
+        QAction *actLoadAllValues{};
+        QAction *actSaveAllValues{};
 
         // Toolbar widgets
         QToolBar* topBar{};
@@ -88,6 +91,10 @@ class SchemaEditor : public QMainWindow {
         void saveCurrentPacketValues();
         void rebuildTree();
         void addNodeRecursive(QTreeWidgetItem* parent, const QJsonValue& nodeVal, QStringList path);
+        bool loadValuesForKeyFromFile(const QString& key);
+        bool saveValuesForKeyToFile(const QString& key) const;
+        bool loadAllValuesFromFile();
+        bool saveAllValuesToFile() const;
 
         // UDP serialization helpers
         QByteArray serializeCurrentPacket() const;

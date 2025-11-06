@@ -134,6 +134,9 @@ void SchemaEditor::buildUi() {
     actSaveValues = fileMenu->addAction("Save Values Only…");
     fileMenu->addSeparator();
     fileMenu->addAction("Quit", this, &QWidget::close, QKeySequence::Quit);
+    actLoadValues    = fileMenu->addAction("Load Values for Current…");
+    actSaveAllValues = fileMenu->addAction("Save All Values…");
+    actLoadAllValues = fileMenu->addAction("Load All Values…");
 
     auto* viewMenu = menuBar()->addMenu("&View");
     actExpandAll = viewMenu->addAction("Expand All");
@@ -149,6 +152,19 @@ void SchemaEditor::buildUi() {
 }
 
 void SchemaEditor::connectSignals() {
+    // Values I/O
+    connect(actLoadValues, &QAction::triggered, this, [this]{
+        loadValuesForKeyFromFile(packetKey(currentPacket));
+    });
+    connect(actSaveValues, &QAction::triggered, this, [this]{
+        saveValuesForKeyToFile(packetKey(currentPacket));
+    });
+    connect(actLoadAllValues, &QAction::triggered, this, [this]{
+        loadAllValuesFromFile();
+    });
+    connect(actSaveAllValues, &QAction::triggered, this, [this]{
+        saveAllValuesToFile();
+    });
     // Rebuild tree when the selected packet changes
     connect(packetCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int){
         saveCurrentPacketValues();
@@ -423,3 +439,99 @@ void SchemaEditor::writeBits(QDataStream& ds, int sizeBits, const QString& value
     ds.writeRawData(raw.constData(), raw.size());
 }
 
+bool SchemaEditor::loadValuesForKeyFromFile(const QString& key) {
+    const QString fn = QFileDialog::getOpenFileName(this, "Load Values (current packet)", {}, "JSON (*.json)");
+    if (fn.isEmpty()) return false;
+
+    QFile f(fn);
+    if (!f.open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, "Load Values", f.errorString());
+        return false;
+    }
+    QJsonParseError e; const auto doc = QJsonDocument::fromJson(f.readAll(), &e); f.close();
+    if (e.error != QJsonParseError::NoError || !doc.isObject()) {
+        QMessageBox::critical(this, "Load Values", QString("JSON parse error: %1").arg(e.errorString()));
+        return false;
+    }
+
+    const auto obj = doc.object();
+    QHash<QString, QString> map;
+    for (auto it = obj.begin(); it != obj.end(); ++it)
+        map.insert(it.key(), it.value().toString());
+
+    storedValues[key] = map;
+    rebuildTree(); // refresh values into the Value column
+    return true;
+}
+
+bool SchemaEditor::saveValuesForKeyToFile(const QString& key) const {
+    const QString fn = QFileDialog::getSaveFileName(nullptr, "Save Values (current packet)", key + ".values.json", "JSON (*.json)");
+    if (fn.isEmpty()) return false;
+
+    const auto it = storedValues.find(key);
+    QJsonObject obj;
+    if (it != storedValues.end()) {
+        for (auto mIt = it.value().begin(); mIt != it.value().end(); ++mIt)
+            obj.insert(mIt.key(), mIt.value());
+    }
+
+    QFile f(fn);
+    if (!f.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+        QMessageBox::warning(nullptr, "Save Values", f.errorString());
+        return false;
+    }
+    f.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
+    f.close();
+    return true;
+}
+
+bool SchemaEditor::loadAllValuesFromFile() {
+    const QString fn = QFileDialog::getOpenFileName(this, "Load All Values", {}, "JSON (*.json)");
+    if (fn.isEmpty()) return false;
+
+    QFile f(fn);
+    if (!f.open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, "Load Values", f.errorString());
+        return false;
+    }
+    QJsonParseError e; const auto doc = QJsonDocument::fromJson(f.readAll(), &e); f.close();
+    if (e.error != QJsonParseError::NoError || !doc.isObject()) {
+        QMessageBox::critical(this, "Load Values", QString("JSON parse error: %1").arg(e.errorString()));
+        return false;
+    }
+
+    const auto root = doc.object();
+    for (auto it = root.begin(); it != root.end(); ++it) {
+        if (!it->isObject()) continue;
+        const QString pktKey = it.key();
+        const auto valObj = it->toObject();
+        QHash<QString, QString> map;
+        for (auto vIt = valObj.begin(); vIt != valObj.end(); ++vIt)
+            map.insert(vIt.key(), vIt.value().toString());
+        storedValues.insert(pktKey, map);
+    }
+    rebuildTree(); // refresh currently selected packet from store
+    return true;
+}
+
+bool SchemaEditor::saveAllValuesToFile() const {
+    const QString fn = QFileDialog::getSaveFileName(nullptr, "Save All Values", "all.values.json", "JSON (*.json)");
+    if (fn.isEmpty()) return false;
+
+    QJsonObject root;
+    for (auto it = storedValues.begin(); it != storedValues.end(); ++it) {
+        QJsonObject obj;
+        for (auto vIt = it.value().begin(); vIt != it.value().end(); ++vIt)
+            obj.insert(vIt.key(), vIt.value());
+        root.insert(it.key(), obj);
+    }
+
+    QFile f(fn);
+    if (!f.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+        QMessageBox::warning(nullptr, "Save All Values", f.errorString());
+        return false;
+    }
+    f.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+    f.close();
+    return true;
+}
