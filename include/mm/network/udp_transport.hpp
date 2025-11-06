@@ -60,7 +60,6 @@ public:
     ~UDPTransport();
 
     RetCode startListening(const Endpoint& endpoint, bool reuse = false);
-    RetCode startListeningMulticast(const Endpoint& endpoint, const std::string& multicastGroup, bool reuse);
     RetCode stopListening();
 
     RetCode send_to(const void* data, size_t size, const Endpoint& endpoint);
@@ -79,7 +78,7 @@ public:
 
     void setMulticastOutboundInterface(const std::string& ip);
 
-    void joinGroup(std::string groupIp, bool loopback);
+    void joinGroup(std::string groupIp, std::string localInterface, bool loopback);
 
 private:
     void startRead();
@@ -118,10 +117,6 @@ inline UDPTransport::RetCode UDPTransport::startListening(const Endpoint& endpoi
         return INVALID_PORT;
     }
 
-    if (endpoint.address().is_multicast()) {
-        return startListeningMulticast({boost::asio::ip::make_address("0.0.0.0"), endpoint.port()}, endpoint.address().to_string(), reuse);
-    }
-
     stopListening();
 
     socket = std::make_shared<Socket>(*ioCtx);
@@ -141,51 +136,6 @@ inline UDPTransport::RetCode UDPTransport::startListening(const Endpoint& endpoi
     if (ec)
     {
         return BIND_ERROR;
-    }
-
-    listeningPort = socket->local_endpoint().port();
-
-    startRead();
-
-    return SUCCESS;
-}
-
-inline UDPTransport::RetCode UDPTransport::startListeningMulticast(const Endpoint& endpoint, const std::string& multicastGroup, bool reuse) {
-    ASSERT_AND_LOG_FAILURE(readCb != nullptr);
-
-    if (listeningPort != 0) {
-        return ALREADY_STARTED;
-    }
-
-    if (endpoint.port() == 0) {
-        return INVALID_PORT;
-    }
-
-
-    stopListening();
-
-    socket = std::make_shared<Socket>(*ioCtx);
-    readBuffer = std::make_shared<Buffer>(0xffff);
-    senderEndpoint = std::make_shared<Endpoint>();
-
-    boost::system::error_code ec;
-    socket->open(endpoint.protocol(), ec);
-    if (ec)
-    {
-        return INVALID_ADDRESS;
-    }
-
-    socket->set_option(boost::asio::ip::udp::socket::reuse_address(reuse));
-
-    socket->bind(endpoint, ec);
-    if (ec)
-    {
-        return BIND_ERROR;
-    }
-
-    if (endpoint.address().is_multicast()) {
-        setMulticastOutboundInterface(endpoint.address().to_string());
-        joinGroup(multicastGroup, false);
     }
 
     listeningPort = socket->local_endpoint().port();
@@ -298,10 +248,11 @@ inline void UDPTransport::setMulticastOutboundInterface(const std::string& ip) {
     socket->set_option(boost::asio::ip::multicast::outbound_interface(outbound.to_v4()));
 }
 
-inline void UDPTransport::joinGroup(std::string groupIp, bool loopback) {
+inline void UDPTransport::joinGroup(std::string groupIp, std::string localIp, bool loopback) {
+    boost::asio::ip::address listen_endpoint = boost::asio::ip::address::from_string(localIp);
     boost::asio::ip::address multicastAddress = boost::asio::ip::address::from_string(groupIp);
     boost::system::error_code ec;
-    socket->set_option(boost::asio::ip::multicast::join_group(multicastAddress.to_v4()), ec);
+    socket->set_option(boost::asio::ip::multicast::join_group(multicastAddress.to_v4(), listen_endpoint.to_v4()), ec);
     if (ec) {
         spdlog::error("Failed to join multicast group {}", groupIp);
     }

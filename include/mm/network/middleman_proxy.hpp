@@ -64,10 +64,10 @@ public:
             spdlog::error("Failed to start middleman proxy socket: errcode {}", (int)rc);
             exit(-1);
         }
+
         if (!cfg.multicast_group.empty()) {
-            socket->setMulticastOutboundInterface(cfg.local_host);
             bool loopback = false;
-            socket->joinGroup(cfg.multicast_group, loopback);
+            socket->joinGroup(cfg.multicast_group, cfg.local_host, loopback);
             socket->setTTL(64);
         }
     }
