@@ -27,10 +27,16 @@ public:
         unsigned short local_port;
         std::string remote_host;
         unsigned short remote_port;
+        bool multicast_enabled;
         std::string multicast_group;
+        int multicast_ttl;
         std::shared_ptr<mutators::packet_mutator> mutator;
         bool log_to_stdout = false;
     };
+
+    const Endpoint& getSource() { return src_ep; }
+    const Endpoint& getSink() { return sink_ep; }
+
 private:
     mm::network::UDPTransportPtr socket;
     settings cfg;
@@ -65,10 +71,11 @@ public:
             exit(-1);
         }
 
-        if (!cfg.multicast_group.empty()) {
+        if (cfg.multicast_enabled) {
             bool loopback = false;
+            spdlog::info("Joining multicast group {}", cfg.multicast_group);
             socket->joinGroup(cfg.multicast_group, cfg.local_host, loopback);
-            socket->setTTL(64);
+            socket->setTTL(cfg.multicast_ttl);
         }
     }
 
